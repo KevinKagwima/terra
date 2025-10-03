@@ -1,0 +1,1088 @@
+{% extends "base.html" %}
+
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="{{url_for('static',filename='css/home.css')}}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block title %}
+Home
+{% endblock %}
+
+{% block nav %}
+<a data-tab="dashboard" class="nav-item active">
+  <i class="fas fa-home"></i>
+  Dashboard
+</a>
+<a data-tab="patients" class="nav-item">
+  <i class="fas fa-user-injured"></i>
+  Patients
+</a>
+{% if current_user.staff_role.name == "Admin" %}
+<a data-tab="staff" class="nav-item">
+  <i class="fas fa-user"></i>
+  Staff
+</a>
+{% endif %}
+<a data-tab="medical-data" class="nav-item">
+  <i class="fas fa-hospital"></i>
+  Medical Data
+</a>
+<a data-tab="lab-analysis" class="nav-item">
+  <i class="fas fa-microscope"></i>
+  Lab Analysis
+</a>
+<a data-tab="diagnosis" class="nav-item">
+  <i class="fas fa-stethoscope"></i>
+  Diagnosis
+</a>
+<a data-tab="prescription" class="nav-item">
+  <i class="fas fa-prescription-bottle"></i>
+  Prescriptions
+</a>
+{% if current_user.staff_role.name == "Admin" or current_user.staff_role.name == "Accountant" %}
+<a data-tab="transaction" class="nav-item">
+  <i class="fas fa-wallet"></i>
+  Transactions
+</a>
+{% endif %}
+<a href="{{ url_for('admin.analytics') }}" class="nav-item-link">
+  <i class="fas fa-chart-line"></i>
+  Analytics
+</a>
+{% endblock %}
+
+{% block body %}
+<div id="dashboard" class="tabContent active">
+  <div class="header">
+    <div class="page-title">
+      <h1>Dashboard</h1>
+      <div class="notifications-dropdown">
+        <button class="notifications-toggle">
+          <i class="fas fa-bell"></i>
+          <span class="notification-badge" id="notification-badge">0</span>
+        </button>
+
+        <div class="notifications-panel">
+          <div class="notifications-header">
+            <h4>Notifications</h4>
+            <button class="mark-all-read">Mark all as read</button>
+          </div>
+
+          <div class="notifications-list" id="notifications-list">
+            <!-- Notifications will be loaded here via JavaScript -->
+            <div class="empty-state">
+              <i class="fas fa-bell-slash"></i>
+              <p>No new notifications</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="search-bar">
+      <i class="fas fa-search"></i>
+      <input id="patient-search" type="text" placeholder="Search patients">
+      <div class="search-box"></div>
+    </div>
+  </div>
+  <div class="stats-grid">
+    {% if current_user.staff_role.name == "Admin" or current_user.staff_role.name == "Accountant" %}
+    <div class="stat-card">
+      <h3>Revenue</h3>
+      <div class="value">
+        {% set revenue = [] %}
+        {% for payment in payments %}
+        {{ revenue.append(payment.amount) or "" }}
+        {% endfor %}
+        {{ "Tsh {:,}".format(revenue|sum) }}
+      </div>
+      <div class="trend">
+        {% set successfull_transactions = [] %}
+        {% set failed_transactions = [] %}
+
+        {% for payment in payments %}
+        {% if payment.is_completed %}
+        {{ successfull_transactions.append(payment) or "" }}
+        {% elif payment.is_canceled %}
+        {{ failed_transactions.append(payment) or "" }}
+        {% endif %}
+        {% endfor %}
+
+        <div class="left">
+          <i class="fas fa-prescription-bottle"></i>
+          {{ successfull_transactions|count }} prescription{% if successfull_transactions|count != 1 %}s{% endif %} paid
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    <div class="stat-card">
+      <h3>Total Patients</h3>
+      <div class="value">{{ patients|count }}</div>
+      <div class="trend">
+        {% set male_patients = [] %}
+        {% set female_patients = [] %}
+
+        {% for patient in patients %}
+        {% if patient.gender == "male" %}
+        {{ male_patients.append(patient) or "" }}
+        {% elif patient.gender == "female" %}
+        {{ female_patients.append(patient) or "" }}
+        {% endif %}
+        {% endfor %}
+
+        <div class="left">
+          <i class="fas fa-mars"></i>
+          {{ male_patients|count }} Male
+        </div>
+        <div class="right">
+          <i class="fas fa-venus"></i>
+          {{ female_patients|count }} Female
+        </div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <h3>Appointments</h3>
+      <div class="value">{{ appointments|count }}</div>
+      <div class="trend">
+        {% set ongoing_appointments = [] %}
+        {% set completed_appointments = [] %}
+
+        {% for appointment in appointments %}
+        {% if appointment.is_active %}
+        {{ ongoing_appointments.append(appointment) or "" }}
+        {% elif appointment.is_active == False %}
+        {{ completed_appointments.append(appointment) or "" }}
+        {% endif %}
+        {% endfor %}
+
+        <div class="left">
+          <i class="fas fa-clock"></i>
+          {{ ongoing_appointments|count }} Ongoing
+        </div>
+        <div class="right">
+          <i class="fas fa-check"></i>
+          {{ completed_appointments|count }} Completed
+        </div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <h3>Lab Tests</h3>
+      <div class="value">{{ lab_tests|count }}</div>
+      <div class="trend">
+        {% set pending_lab_tests = [] %}
+        {% set approved_lab_tests = [] %}
+
+        {% for lab_test in lab_tests %}
+        {% if lab_test.is_active %}
+        {{ pending_lab_tests.append(lab_test) or "" }}
+        {% elif lab_test.is_approved %}
+        {{ approved_lab_tests.append(lab_test) or "" }}
+        {% endif %}
+        {% endfor %}
+
+        <div class="left">
+          <i class="fas fa-clock"></i>
+          {{ pending_lab_tests|count }} Pending
+        </div>
+        <div class="right">
+          <i class="fas fa-check"></i>
+          {{ approved_lab_tests|count }} Approved
+        </div>
+      </div>
+    </div>
+  </div>
+  {% set feedback_list = [] %}
+  {% for appointment in appointments if appointment.is_active == False and appointment.is_paid == True and not
+  appointment.feedback %}
+  {{ feedback_list.append(appointment) or "" }}
+  {% endfor %}
+  {% if feedback_list %}
+  <div class="feedback-box">
+    <div class="feedback-header">
+      <h4>Feedback</h4>
+      <p>Provide feedback for recent appointments</p>
+    </div>
+    <div class="feedback-list">
+      {% for feedback in feedback_list %}
+      <div class="feedback">
+        <h4>Appointment #{{ feedback.unique_id }}</h4>
+        <a href="{{ url_for('admin.appointment', appointment_id=feedback.unique_id) }}">
+          <button>Update</button>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+  <div class="tabs">
+    <div class="tab active" data-tab="today">Recent Appointments</div>
+  </div>
+  <div class="tab-content active" id="today">
+    <div class="appointments-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Patient</th>
+            <th>Date</th>
+            <th>Purpose</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for appointment in appointments[-5:]|sort(attribute="date_created", reverse=true) %}
+          <tr>
+            <td>
+              <a href="{{ url_for('admin.patient_profile', patient_id=appointment.patient_appointment.unique_id) }}">
+                <div style="display: flex; align-items: center;">
+                  {{ appointment.patient_appointment.first_name }} {{ appointment.patient_appointment.last_name }}
+                </div>
+              </a>
+            </td>
+            <td>{{ appointment.date_created.strftime("%d/%m/%Y at %I:%M %p") }}</td>
+            <td>General Care</td>
+            <td>
+              {% if appointment.is_active %}
+              <span class="status-badge pending">Ongoing</span>
+              {% else %}
+              <span class="status-badge completed">Completed</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if appointment.is_active %}
+              <a href="{{ url_for('admin.appointment', appointment_id=appointment.unique_id) }}">
+                <button class="btn btn-primary btn-sm">Resume</button>
+              </a>
+              {% else %}
+              <a href="{{ url_for('admin.appointment', appointment_id=appointment.unique_id) }}">
+                <button class="btn btn-outline btn-sm">Summary</button>
+                {% endif %}
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="analytics-grid">
+    <!-- Most Diagnosed Diseases -->
+    <div class="analytics-card">
+      <div class="card-header">
+        <h2 class="card-title">Most Diagnosed Diseases</h2>
+        <div class="card-icon disease-icon">
+          <i class="fas fa-disease"></i>
+        </div>
+      </div>
+      {% if diagnosis_disease_ids %}
+      <div class="stats-container" id="diseases-container">
+        {% for diagnosis_disease_id, diagnosis_count in diagnosis_disease_ids %}
+        {% for disease in diseases if disease.id == diagnosis_disease_id %}
+        <div class="stat-item">
+          <div class="stat-info">
+            <span>{{ disease.name }}</span>
+          </div>
+          <span class="stat-count">{{ diagnosis_count }} case(s)</span>
+        </div>
+        {% endfor %}
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="else">No data to show</p>
+      {% endif %}
+    </div>
+
+    <!-- Most Prescribed Medications -->
+    <div class="analytics-card">
+      <div class="card-header">
+        <h2 class="card-title">Most Prescribed Medications</h2>
+        <div class="card-icon medication-icon">
+          <i class="fas fa-pills"></i>
+        </div>
+      </div>
+      {% if prescription_medicine_ids %}
+      <div class="stats-container" id="medications-container">
+        {% for prescription_medicine_id, prescription_count in prescription_medicine_ids %}
+        {% for medicine in medicines if medicine.id == prescription_medicine_id %}
+        <div class="stat-item">
+          <div class="stat-info">
+            <span>{{ medicine.name }}</span>
+          </div>
+          <span class="stat-count">{{ prescription_count }} prescription(s)</span>
+        </div>
+        {% endfor %}
+        {% endfor %}
+      </div>
+      {% else %}
+      <p class="else">No data to show</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+<div id="patients" class="tabContent">
+  <div class="header">
+    <div class="page-title">
+      <h1>
+        Patients
+        <span>{{ patients|count }}</span>
+      </h1>
+    </div>
+    <a href="{{ url_for('admin.add_patient') }}">
+      <button class="btn btn-primary">
+        <i class="fas fa-plus"></i> New Patient
+      </button>
+    </a>
+  </div>
+  <div class="patients-table-container">
+    <table id="patients-table">
+      <thead>
+        <tr>
+          <th>Patient ID</th>
+          <th>Full Name</th>
+          <th>Phone</th>
+          <th>Age</th>
+          <th>Gender</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for patient in patients|sort(attribute="id", reverse=true) %}
+        <tr id="patient-list">
+          <td>PT - {{ patient.unique_id }}</td>
+          <td>
+            <div class="patient-cell">
+              <div class="patient-info">
+                <div class="patient-name">
+                  <a href="{{ url_for('admin.patient_profile', patient_id=patient.unique_id) }}">
+                    {{ patient.first_name }} {{ patient.last_name }}
+                  </a>
+                </div>
+              </div>
+            </div>
+          </td>
+          <td>
+            {% if patient.phone_number_1 %}
+            {{ patient.phone_number_1 }}
+            {% elif patient.phone_number_2 %}
+            /{{ patient.phone_number_2 }}
+            {% else %}
+            ---
+            {% endif %}
+          </td>
+          <td>{{ patient.age }}</td>
+          <td>
+            <span class="gender-badge gender-{{ patient.gender }}">
+              <i class="fas fa-venus"></i> {{ patient.gender }}
+            </span>
+          </td>
+          <td>
+            <div class="table-actions-cell">
+              <a href="{{ url_for('admin.edit_patient', patient_id=patient.unique_id) }}">
+                <button class="btn-icon edit">
+                  <i class="fas fa-edit"></i>
+                </button>
+              </a>
+              <a href="{{ url_for('admin.remove_patient', patient_id=patient.unique_id) }}">
+                <button class="btn-icon delete">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <!-- Mobile view cards (hidden on desktop) -->
+    {% for patient in patients|sort(attribute=id, reverse=true) %}
+    <div class="mobile-patient-card">
+      <div class="mobile-card-header">
+        <div style="flex: 1;">
+          <div style="font-weight: 500;">{{ patient.first_name }} {{ patient.last_name }}</div>
+          <div style="font-size: 0.75rem; color: #64748b;">ID: PT-{{ patient.unique_id }}</div>
+        </div>
+      </div>
+      <div class="mobile-card-body">
+        <div class="mobile-card-field">
+          <label>Phone</label>
+          <div>
+            {{ patient.phone_number_1 }}
+            {% if patient.phone_number_2 %}
+            /{{ patient.phone_number_2 }}
+            {% endif %}
+          </div>
+        </div>
+        <div class="mobile-card-field">
+          <label>Age</label>
+          <div>{{ patient.age }}</div>
+        </div>
+        <div class="mobile-card-field">
+          <label>Gender</label>
+          <div>
+            <span class="gender-badge gender-{{ patient.gender }}">
+              <i class="fas fa-venus"></i>
+              {{ patient.gender }}
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="mobile-card-actions">
+        <button class="btn-icon edit">
+          <i class="fas fa-edit"></i>
+        </button>
+        <button class="btn-icon delete">
+          <i class="fas fa-trash"></i>
+        </button>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% if current_user.staff_role.name == "Admin" %}
+<div id="staff" class="tabContent">
+  <div class="header">
+    <div class="page-title">
+      <h1>
+        Staff
+        <span>{{ staffs|count }}</span>
+      </h1>
+    </div>
+    <button id="addBranchBtn" class="btn btn-primary">
+      <i class="fas fa-plus"></i>
+      Add Staff
+    </button>
+  </div>
+  <div class="patients-table-container">
+    <table id="patients-table">
+      <thead>
+        <tr>
+          <th>Staff ID</th>
+          <th>Full Name</th>
+          <th>Phone Number</th>
+          <th>Email Address</th>
+          <th>Role</th>
+          <th>Branch</th>
+          {% if current_user.staff_role.name == "Admin" %}
+          <th>Actions</th>
+          {% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for staff in staffs|sort(attribute="id") %}
+        <tr id="patient-list">
+          <td>
+            <b>ST - {{ staff.unique_id }}</b>
+          </td>
+          <td>
+            <div class="patient-cell">
+              <div class="patient-info">
+                <div class="patient-name">
+                  {{ staff.first_name }} {{ staff.last_name }}
+                </div>
+              </div>
+            </div>
+          </td>
+          <td>
+            {% if staff.phone %}
+            0{{ staff.phone }}
+            {% else %}
+            ---
+            {% endif %}
+          </td>
+          <td>{{ staff.email }}</td>
+          <td>{{ staff.staff_role.name }}</td>
+          <td>
+            {% if staff.staff_role.name == "Admin" %}
+            Overseer
+            {% else %}
+            {{ staff.clinic_staff.name }}
+            {% endif %}
+          </td>
+          <td>
+            {% if staff.staff_role.name != "Admin" and current_user.staff_role.name == "Admin" %}
+            <div class="table-actions-cell">
+              <a href="{{ url_for('admin.remove_staff', staff_id=staff.unique_id) }}">
+                <button class="btn-icon delete">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </a>
+            </div>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <!-- Mobile view cards (hidden on desktop) -->
+    {% for staff in staffs|sort(attribute="first_name") %}
+    <div class="mobile-patient-card">
+      <div class="mobile-card-header">
+        <div style="flex: 1;">
+          <div style="font-weight: 500;">{{ staff.first_name }} {{ staff.last_name }}</div>
+          <div style="font-size: 0.75rem; color: #64748b;">ID: PT-{{ staff.unique_id }}</div>
+        </div>
+      </div>
+      <div class="mobile-card-body">
+        <div class="mobile-card-field">
+          <label>Phone Number</label>
+          <div>
+            {{ staff.phone }}
+          </div>
+        </div>
+        <div class="mobile-card-field">
+          <label>Email Address</label>
+          <div>{{ staff.email }}</div>
+        </div>
+        <div class="mobile-card-field">
+          <label>Branch</label>
+          <div>
+            {{ staff.clinic_staff.name }}
+          </div>
+        </div>
+      </div>
+      <div class="mobile-card-actions">
+        <a href="{{ url_for('admin.remove_staff', staff_id=staff.unique_id) }}">
+          <button class=" btn-icon delete">
+            <i class="fas fa-trash"></i>
+          </button>
+        </a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+<div id="medical-data" class="tabContent">
+  <div class="header">
+    <div class="page-title">
+      <h1>Medical Data</h1>
+    </div>
+    <div class="page-actions">
+      <a href="{{ url_for('admin.add_medicine') }}">
+        <button class="btn btn-primary">
+          <i class="fas fa-plus"></i> New Medicine
+        </button>
+      </a>
+      <a href="{{ url_for('admin.add_disease') }}">
+        <button class="btn btn-primary">
+          <i class="fas fa-plus"></i> New Disease
+        </button>
+      </a>
+    </div>
+  </div>
+  <div class="table-menu">
+    <div class="med-tab active" data-tab="medicine">Medicines ({{ inventories|count }})</div>
+    <div class="med-tab" data-tab="disease">Diseases ({{ diseases|count }})</div>
+  </div>
+  <div id="medicine" class="medical-data-table active">
+    <div class="search-medical-data">
+      <input class="search-inputs" type="text" name="search-medicine" id="medicine-search"
+        placeholder="Search for medicine">
+    </div>
+    <table class="medical-table" id="medicine-table">
+      <thead>
+        <tr>
+          <th>Medicine ID</th>
+          <th>Name</th>
+          <th>Price</th>
+          <th>Quantity</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for inventory in inventories|sort(attribute="id", reverse=true) %}
+        <tr id="medicine-name">
+          <th>MD - {{ inventory.inventory.unique_id }}</th>
+          <td>{{ inventory.inventory.name|truncate(60) }}</td>
+          <td>{{ "Tsh {:,}".format(inventory.inventory.price) }}</td>
+          <td>{{ inventory.quantity }}</td>
+          <td>
+            {% if inventory.quantity > 5 %}
+            <span class="status-badge completed">Good Quantity</span>
+            {% else %}
+            <span class="status-badge cancelled">Low Quantity</span>
+            {% endif %}
+          </td>
+          <td>
+            <div class="table-actions-cell">
+              <a href="{{ url_for('admin.edit_medicine', inventory_id=inventory.unique_id) }}">
+                <button class="btn-icon edit">
+                  <i class="fas fa-edit"></i>
+                </button>
+              </a>
+              <a href="{{ url_for('admin.remove_medicine', inventory_id=inventory.unique_id) }}">
+                <button class="btn-icon delete">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div id="disease" class="medical-data-table">
+    <div class="search-medical-data">
+      <input class="search-inputs" type="text" name="search-disease" id="disease-search"
+        placeholder="Search for disease">
+    </div>
+    <table class="medical-table" id="disease-table">
+      <thead>
+        <tr>
+          <th>Disease ID</th>
+          <th>Name</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for disease in diseases|sort(attribute="name") %}
+        <tr id="disease-name">
+          <th>DS - {{ disease.unique_id }}</th>
+          <td>{{ disease.name|truncate(60) }}</td>
+          <td>
+            <div class="table-actions-cell">
+              <a href="{{ url_for('admin.edit_disease', disease_id=disease.unique_id) }}">
+                <button class="btn-icon edit">
+                  <i class="fas fa-edit"></i>
+                </button>
+              </a>
+              <a href="{{ url_for('admin.remove_disease', disease_id=disease.unique_id) }}">
+                <button class="btn-icon delete">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+<div id="lab-analysis" class="tabContent">
+  <div class="header">
+    <div class="page-title">
+      <h1>
+        Lab Analysis
+        <span>{{ lab_tests|count }}</span>
+      </h1>
+    </div>
+  </div>
+  <div class="search-medical-data">
+    <input class="search-inputs" type="text" name="search-labtest" id="labtest-search"
+      placeholder="Search for lab tests">
+  </div>
+  {% if lab_tests %}
+  <div class="labtest-box">
+    {% for lab_test in lab_tests|sort(attribute="id", reverse=True) %}
+    <div class="diagnosis-container">
+      <div class="diagnosis-header">
+        <div class="patient-info">
+          <div class="patient-details">
+            <h3>{{ lab_test.patient_labtest.first_name }} {{ lab_test.patient_labtest.last_name }}</h3>
+            <div class="patient-meta">
+              <span>{{ lab_test.patient_labtest.age }} years old</span>
+              <span style="text-transform: capitalize;">{{ lab_test.patient_labtest.gender }}</span>
+              <span>ID: PT - {{ lab_test.patient_labtest.unique_id }}</span>
+              <span>Date Created: {{ lab_test.date_created.strftime("%B %d, %Y") }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="diagnosis-meta">
+          <div class="diagnosis-id">Lab Analysis ID: LB-{{ lab_test.unique_id }}</div>
+        </div>
+      </div>
+
+      <div class="diseases-list">
+        {% if lab_test.lab_analysis_details %}
+        <div class="labtest-list-box">
+          {% for lab_test_detail in lab_test.lab_analysis_details %}
+          <div class="lab-item">
+            <div class="lab-header">
+              <h2 class="section-title">Test Conducted</h2>
+            </div>
+            <div class="lab-details">
+              <div class="disease-name">
+                <p>{{ lab_test_detail.test }}</p>
+              </div>
+            </div>
+          </div>
+          <div class="lab-item">
+            <div class="lab-header">
+              <h2 class="section-title">Test Result</h2>
+            </div>
+            <div class="lab-details">
+              <div class="disease-name">
+                <p>{{ lab_test_detail.result }}</p>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      <div class="actions-section">
+        <div class="left">
+          {% if lab_test.is_approved %}
+          <span class="status-badge completed">Approved</span>
+          {% else %}
+          <span class="status-badge pending">Pending</span>
+          {% endif %}
+        </div>
+        <div class="right">
+          <a href="{{ url_for('admin.appointment', appointment_id=lab_test.appointment_lab_analysis.unique_id) }}">
+            <button class="btn btn-outline">
+              <i class="fas fa-arrow-right"></i> View in appointment
+            </button>
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="else">No data to show</p>
+  {% endif %}
+</div>
+<div id="diagnosis" class="tabContent">
+  <div class="header">
+    <div class="page-title">
+      <h1>
+        Diagnosis
+        <span>{{ all_diagnosis|count }}</span>
+      </h1>
+    </div>
+  </div>
+  <div class="search-medical-data">
+    <input class="search-inputs" type="text" name="search-transaction" id="diagnosis-search"
+      placeholder="Search for diagnosis">
+  </div>
+  {% if all_diagnosis %}
+  <div class="diagnosis-box">
+    {% for diagnosis in all_diagnosis|sort(attribute="id", reverse=True) %}
+    <div class="diagnosis-container">
+      <div class="diagnosis-header">
+        <div class="patient-info">
+          <div class="patient-details">
+            <h3>{{ diagnosis.patient_diagnosis.first_name }} {{ diagnosis.patient_diagnosis.last_name }}</h3>
+            <div class="patient-meta">
+              <span>{{ diagnosis.patient_diagnosis.age }} years old</span>
+              <span style="text-transform: capitalize;">{{ diagnosis.patient_diagnosis.gender }}</span>
+              <span>ID: PT - {{ diagnosis.patient_diagnosis.unique_id }}</span>
+              <span>Date Created: {{ diagnosis.date_created.strftime("%B %d, %Y") }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="diagnosis-meta">
+          <div class="diagnosis-id">Diagnosis ID: DS-{{ diagnosis.unique_id }}</div>
+        </div>
+      </div>
+
+      <div class="diseases-list">
+        <h2 class="section-title">Diagnosed Conditions</h2>
+
+        {% if diagnosis.diagnosis_details %}
+        <div class="diagnosis-list-box">
+          {% for disease_detail in diagnosis.diagnosis_details %}
+          <div class="disease-item">
+            <div class="disease-icon">
+              <i class="fas fa-disease"></i>
+            </div>
+            <div class="disease-details">
+              <div class="disease-name">
+                {{ disease_detail.diagnosed_disease.name }}
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <i class="fas fa-clipboard-list"></i>
+          <p>No diseases diagnosed for this patient</p>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="notes-section">
+        <h2 class="section-title">Doctor's Notes</h2>
+        {% if diagnosis.note %}
+        <div class="notes-content">
+          {{ diagnosis.note }}
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <i class="fas fa-comment-medical"></i>
+          <p>No additional notes provided</p>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="actions-section">
+        <a href="{{ url_for('admin.appointment', appointment_id=diagnosis.appointment_diagnosis.unique_id) }}">
+          <button class="btn btn-outline">
+            <i class="fas fa-arrow-right"></i> View in appointment
+          </button>
+        </a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="else">No data to show</p>
+  {% endif %}
+</div>
+<div id="prescription" class="tabContent">
+  <div class="header">
+    <div class="page-title">
+      <h1>
+        Prescriptions
+        <span>{{ prescriptions|count }}</span>
+      </h1>
+    </div>
+  </div>
+  <div class="search-medical-data">
+    <input class="search-inputs" type="text" name="search-prescription" id="prescription-search"
+      placeholder="Search for prescriptions">
+  </div>
+  {% if prescriptions %}
+  <div class="prescription-box">
+    {% for prescription in prescriptions|sort(attribute="id", reverse=True) %}
+    <div class="prescription-container">
+      <div class="diagnosis-header">
+        <div class="patient-info">
+          <div class="patient-details">
+            <h3>{{ prescription.patient_prescription.first_name }} {{ prescription.patient_prescription.last_name }}
+            </h3>
+            <div class="patient-meta">
+              <span>{{ prescription.patient_prescription.age }} years old</span>
+              <span style="text-transform: capitalize;">{{ prescription.patient_prescription.gender }}</span>
+              <span>ID: PT - {{ prescription.patient_prescription.unique_id }}</span>
+              <span>Date Created: {{ prescription.date_created.strftime("%B %d, %Y") }}</span>
+            </div>
+          </div>
+          <div class="prescription-total">{{ "Tsh {:,}".format(prescription.total) }}</div>
+        </div>
+        <div class="diagnosis-meta">
+          <div class="diagnosis-id">Prescription ID: PS-{{ prescription.unique_id }}</div>
+        </div>
+      </div>
+      <div class="diseases-list">
+        <h2 class="section-title">Prescribed Medication</h2>
+
+        {% if prescription.prescription_details %}
+        <div class="diagnosis-list-box">
+          {% for prescription_detail in prescription.prescription_details %}
+          <div class="disease-item">
+            <div class="disease-icon">
+              <i class="fas fa-disease"></i>
+            </div>
+            <div class="disease-details">
+              <div class="disease-name">
+                {{ prescription_detail.prescribed_medicine.name }}
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <i class="fas fa-clipboard-list"></i>
+          <p>No medicine prescribed for this patient</p>
+        </div>
+        {% endif %}
+      </div>
+      <div class="notes-section">
+        <h2 class="section-title">Doctor's Notes</h2>
+        {% if prescription.note %}
+        <div class="notes-content">
+          {{ prescription.note }}
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <i class="fas fa-comment-medical"></i>
+          <p>No additional notes provided</p>
+        </div>
+        {% endif %}
+      </div>
+      <div class="actions-section">
+        <div class="left-btns">
+          {% if prescription.is_paid %}
+          <span class="status-badge completed">Paid</span>
+          {% elif prescription.appointment_prescription.is_active %}
+          <span class="status-badge pending">Appointment Ongoing</span>
+          {% elif (current_user.staff_role.name == "Admin" or current_user.staff_role.name == "Accountant") and
+          prescription.is_paid == False %}
+          <button id="pay-btn" class="btn btn-outline" data-id="{{ prescription.unique_id }}">
+            <i class="fas fa-wallet"></i>
+            Pay
+          </button>
+          {% else %}
+          <span class="status-badge cancelled">Not Paid</span>
+          {% endif %}
+        </div>
+        <div class="right-btns">
+          <a href="{{ url_for('admin.appointment', appointment_id=prescription.appointment_prescription.unique_id) }}">
+            <button class="btn btn-outline">
+              <i class="fas fa-arrow-right"></i> View in appointment
+            </button>
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="else">No data to show</p>
+  {% endif %}
+</div>
+{% if current_user.staff_role.name == "Admin" or current_user.staff_role.name == "Accountant" %}
+<div id="transaction" class="tabContent">
+  <div class="header">
+    <div class="page-title">
+      <h1>
+        Transactions
+        <span>{{ payments|count }}</span>
+      </h1>
+    </div>
+  </div>
+  <div class="search-medical-data">
+    <input class="search-inputs" type="text" name="search-transaction" id="transaction-search"
+      placeholder="Search for transacions">
+  </div>
+  {% if payments %}
+  <div class="transaction-box">
+    {% for payment in payments|sort(attribute="date_paid", reverse=True) %}
+    <div class="transaction-container">
+      <div class="diagnosis-header">
+        <div class="patient-info">
+          <div class="patient-details">
+            <h3>{{ payment.patient_payment.first_name }} {{ payment.patient_payment.last_name }}
+            </h3>
+            <div class="patient-meta">
+              <span>{{ payment.patient_payment.age }} years old</span>
+              <span style="text-transform: capitalize;">{{ payment.patient_payment.gender }}</span>
+              <span>ID: PT - {{ payment.patient_payment.unique_id }}</span>
+              {% if payment.date_paid %}
+              <span>Date Paid: {{ payment.date_paid.strftime("%B %d, %Y at %I:%M %p") }}</span>
+              {% endif %}
+            </div>
+          </div>
+          <div class="prescription-total">{{ "Tsh {:,}".format(payment.prescription_payment.total) }}</div>
+        </div>
+        <div class="diagnosis-meta">
+          <div class="diagnosis-id">Payment ID: PS-{{ payment.unique_id }}</div>
+        </div>
+      </div>
+
+      <div class="actions-section">
+        <div class="left-btns">
+          {% if payment.is_completed %}
+          <span class="status-badge completed">Completed</span>
+          {% endif %}
+        </div>
+        <div class="right-btns">
+          <a target="_blank" href="{{ url_for('admin.export_transaction', payment_id=payment.unique_id) }}">
+            <button id="receipt-btn" class="btn btn-primary">
+              <i class="fas fa-download"></i>
+              Download Receipt
+            </button>
+          </a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="else">No data to show</p>
+  {% endif %}
+</div>
+{% endif %}
+<div id="profile" class="tabContent">
+  <div class="header">
+    <div class="page-title">
+      <h1>Update Password</h1>
+    </div>
+  </div>
+  <div class="updateformbox">
+    <form action="{{ url_for('auth.update_password') }}" method="post">
+      {{ update_password_form.csrf_token }}
+      <div class="form-group">
+        {{ update_password_form.new_password.label }}
+        {{ update_password_form.new_password(placeholder="Enter new password") }}
+      </div>
+      <div class="form-group">
+        {{ update_password_form.confirm_password.label }}
+        {{ update_password_form.confirm_password(placeholder="Confirm password") }}
+      </div>
+      <button type="submit">Update Password</button>
+    </form>
+  </div>
+</div>
+
+<div class="modal">
+  <div class="modal-content">
+    <div class="modal-body">
+      <p>Are you sure you want to mark this prescription as paid?</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn cancel-btn">Cancel</button>
+      <button class="btn confirm-btn">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div id="branchModal" class="branchmodal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h2>Add New Staff</h2>
+    <form action="{{ url_for('auth.signup') }}" id="branchForm" method="post">
+      {{ form.csrf_token }}
+      <div class="form-group">
+        {{ form.first_name.label }}
+        {{ form.first_name(placeholder="Enter First Name") }}
+      </div>
+      <div class="form-group">
+        {{ form.last_name.label }}
+        {{ form.last_name(placeholder="Enter Last Name") }}
+      </div>
+      <div class="form-group">
+        {{ form.email_address.label }}
+        {{ form.email_address(placeholder="Enter Email Address") }}
+      </div>
+      <div class="form-group">
+        {{ form.phone_number.label }}
+        {{ form.phone_number(placeholder="Enter Phone Number") }}
+      </div>
+      <div class="form-group">
+        {{ form.role.label }}
+        {{ form.role }}
+      </div>
+      <div class="form-group">
+        {{ form.branch.label }}
+        {{ form.branch }}
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-primary" id="cancelBtn">Cancel</button>
+        <button type="submit" class="btn-primary">Add Staff</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="{{ url_for('static', filename='js/home.js') }}"></script>
+<script src="{{ url_for('static', filename='js/notification.js') }}"></script>
+<script src="{{ url_for('static', filename='js/patient-search.js') }}"></script>
+<script src="{{ url_for('static', filename='js/search.js') }}"></script>
+<script src="{{ url_for('static', filename='js/analytics.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/select-branch.css') }}">
+{% endblock %}
+
+{% block title %}
+Select Branch
+{% endblock %}
+
+{% block body %}
+<div class="container">
+  <div class="branches-box">
+    <div class="branch-header">
+      <h2>
+        Clinic Branches
+        <span>{{ clinics|count }}</span>
+      </h2>
+      <button id="addBranchBtn" class="btn-primary">+ Add New Branch</button>
+    </div>
+    <div class="branches-list">
+      {% if clinics %}
+      {% for clinic in clinics %}
+      <div class="branch">
+        <div class="branch-box">
+          <p class="branch-name">
+            {{ clinic.name }} {% if clinic.clinic_type.name == "Headquarters" %} - HQ {% endif %}
+          </p>
+          <p class="branch-address">
+            {{ clinic.region }}, {{ clinic.district }}
+          </p>
+          {% if clinic.is_active %}
+          <span class="status-badge completed">Open</span>
+          {% else %}
+          <span class="status-badge cancelled">Closed</span>
+          {% endif %}
+        </div>
+        <div class="branch-stats-box">
+          <div class="branch-stat">
+            <i></i>
+            <p>
+              <span>{{ clinic.patients|count }}</span>
+              <b>
+                Patient{% if clinic.patients|count != 1 %}s{% endif %}
+              </b>
+            </p>
+          </div>
+          <div class="branch-stat">
+            <i></i>
+            <p>
+              <span>{{ clinic.staff|count }}</span>
+              <b>Staff{% if clinic.staff|count != 1 %}s{% endif %}</b>
+            </p>
+          </div>
+          <div class="branch-stat">
+            <i></i>
+            <p>
+              <span>{{ clinic.prescription|count }}</span>
+              <b>Prescription{% if clinic.prescription|count != 1 %}s{% endif %}</b>
+            </p>
+          </div>
+          <div class="branch-stat">
+            <i></i>
+            <p>
+              <span>{{ clinic.diagnosis|count }}</span>
+              <b>Diagnos{% if clinic.diagnosis|count != 1 %}es{% else %}is{% endif %}</b>
+            </p>
+          </div>
+          <div class="branch-stat">
+            <i></i>
+            <p>
+              <span>{{ clinic.inventory|count }}</span>
+              <b>Medicine{% if clinic.inventory|count != 1 %}s{% endif %}</b>
+            </p>
+          </div>
+        </div>
+        <div class="branch-action">
+          {% if clinic.is_active %}
+          <a id="navigate-link" href="{{ url_for('admin.load_clinic', branch_name=clinic.alias) }}">
+            <button>
+              Navigate
+              <i class="fas fa-arrow-right"></i>
+            </button>
+          </a>
+          <a id="remove-link" href="{{ url_for('admin.close_clinic', branch_name=clinic.alias) }}">
+            <button>
+              Close
+              <i class="fas fa-lock"></i>
+            </button>
+          </a>
+          {% else %}
+          <a id="open-link" href="{{ url_for('admin.reopen_clinic', branch_name=clinic.alias) }}">
+            <button>
+              Reopen
+              <i class="fas fa-key"></i>
+            </button>
+          </a>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+      {% else %}
+      <p class="else">No branches added</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div id="branchModal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h2>Add New Clinic Branch</h2>
+    <form action="{{ url_for('admin.add_branch') }}" id="branchForm" method="post">
+      {{ form.csrf_token }}
+      <div class="form-group extend">
+        {{ form.name.label }}
+        {{ form.name(placeholder="Enter Clinic Name") }}
+      </div>
+      <div class="form-group">
+        {{ form.region.label }}
+        {{ form.region(placeholder="Enter name of region") }}
+      </div>
+      <div class="form-group">
+        {{ form.district.label }}
+        {{ form.district(placeholder="Enter name of district") }}
+      </div>
+      <div class="form-group extend">
+        {{ form.branch_type.label }}
+        {{ form.branch_type }}
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-primary" id="cancelBtn">Cancel</button>
+        <button type="submit" class="btn-primary">Add Branch</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="{{ url_for('static', filename='js/select_branch.js') }}"></script>
+{% endblock %}

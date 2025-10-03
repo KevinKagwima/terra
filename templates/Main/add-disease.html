@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block head %}
+{{super()}}
+<link rel="stylesheet" href="{{url_for('static',filename='css/patient.css')}}">
+{% endblock %}
+
+{% block title %}
+{% if not title_message %}
+Add Disease
+{% else %}
+Edit Disease
+{% endif %}
+{% endblock %}
+
+{% block nav %}
+<a href="{{ url_for('admin.dashboard') }}" class="nav-item">
+  <i class="fas fa-chevron-left"></i>
+  Back To Dashboard
+</a>
+{% endblock %}
+
+{% block body %}
+<div class="container">
+  <div class="header">
+    <div class="page-title">
+      {% if not title_message %}
+      <h1>New Disease</h1>
+      {% else %}
+      <h1>Edit Disease Details</h1>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="patient-form-container">
+    <form method="POST">
+      {{ form.csrf_token() }}
+
+      <div class="form-section">
+        <div class="form-grid">
+          <div class="form-group extend">
+            {{ form.name.label }}
+            {{ form.name(class="form-control", placeholder="Enter name of disease") }}
+            {% if form.name.errors %}
+            <div class="error-message">{{ form.name.errors[0] }}</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

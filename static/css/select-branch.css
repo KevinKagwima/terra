@@ -1,0 +1,200 @@
+.btn-primary {
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.branches-box {
+  display: grid;
+  gap: 2rem;
+}
+
+.branch-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.branch-header h2 {
+  color: var(--black);
+}
+
+.branches-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(25rem, 1fr));
+  gap: 1rem;
+}
+
+.branch {
+  background: var(--white);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  display: grid;
+  gap: 1rem;
+}
+
+.branch-box {
+  display: grid;
+  position: relative;
+}
+
+.branch-name {
+  font-weight: 600;
+}
+
+.branch-address {
+  font-size: 0.875rem;
+  color: var(--grey);
+}
+
+.status-badge {
+  position: absolute;
+  right: 0;
+  padding-block: 0.15rem;
+}
+
+.branch-stats-box {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.branch-stat {
+  padding: 0.3rem 0.6rem;
+  border-radius: 10px;
+  background-color: var(--grey-2);
+  font-size: 0.8rem;
+  max-width: max-content;
+  outline: 1px solid var(--dark-grey);
+}
+
+.branch-action {
+  margin-top: 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.branch-action a {
+  flex-grow: 1;
+}
+
+#navigate-link button,
+#remove-link button,
+#open-link button {
+  background-color: var(--light-green);
+  width: 100%;
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+}
+
+.fa-arrow-right {
+  rotate: -40deg;
+}
+
+#remove-link button {
+  background-color: red;
+}
+
+#open-link button {
+  background-color: var(--yellow);
+}
+
+#navigate-link button:hover {
+  background-color: var(--light-green-2);
+}
+
+/* Modal Styles */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 100;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background-color: var(--white);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 500px;
+  padding: 2rem;
+  position: relative;
+}
+
+.close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  font-size: 2.5rem;
+  font-weight: bold;
+  cursor: pointer;
+  color: red;
+}
+
+.modal h2 {
+  color: var(--black);
+  margin-bottom: 1.5rem;
+}
+
+#branchForm {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+.extend,
+.form-actions {
+  grid-column: 1/-1;
+}
+
+.form-group {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 500;
+  color: var(--black);
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 0.75rem;
+  outline: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+#cancelBtn {
+  background-color: red;
+}
+
+.else {
+  text-align: center;
+  color: red;
+}

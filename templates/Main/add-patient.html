@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block head %}
+{{super()}}
+<link rel="stylesheet" href="{{url_for('static',filename='css/patient.css')}}">
+{% endblock %}
+
+{% block title %}
+{% if not title_message %}
+Add Patient
+{% else %}
+Edit Patient
+{% endif %}
+{% endblock %}
+
+{% block nav %}
+<a href="{{ url_for('admin.dashboard') }}" class="nav-item">
+  <i class="fas fa-chevron-left"></i>
+  Back To Dashboard
+</a>
+{% if title_message %}
+<a href="{{ url_for('admin.patient_profile', patient_id=patient.unique_id) }}" class="nav-item">
+  <i class="fas fa-user-injured"></i> Client Profile
+</a>
+{% endif %}
+{% endblock %}
+
+{% block body %}
+<div class="container">
+  <div class="header">
+    <div class="page-title">
+      {% if not title_message %}
+      <h1>New Patient Registration</h1>
+      {% else %}
+      <h1>Edit Patient Details</h1>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="patient-form-container">
+    <form method="POST">
+      {{ form.hidden_tag() }}
+
+      <div class="form-section">
+        <h2 class="section-title">Personal Information</h2>
+        <div class="form-grid">
+          <div class="form-group">
+            {{ form.first_name.label }}
+            {{ form.first_name(class="form-control", placeholder="Enter First Name") }}
+            {% if form.first_name.errors %}
+            <div class="error-message">{{ form.first_name.errors[0] }}</div>
+            {% endif %}
+          </div>
+          <div class="form-group">
+            {{ form.last_name.label }}
+            {{ form.last_name(class="form-control", placeholder="Enter Last Name") }}
+            {% if form.last_name.errors %}
+            <div class="error-message">{{ form.last_name.errors[0] }}</div>
+            {% endif %}
+          </div>
+          <div class="form-group">
+            {{ form.age.label }}
+            {{ form.age(class="form-control", placeholder="Enter Patient's Age") }}
+            {% if form.age.errors %}
+            <div class="error-message">{{ form.age.errors[0] }}</div>
+            {% endif %}
+          </div>
+          <div class="form-group">
+            {{ form.gender.label }}
+            {{ form.gender(class="form-control") }}
+            {% if form.gender.errors %}
+            <div class="error-message">{{ form.gender.errors[0] }}</div>
+            {% endif %}
+          </div>
+          <div class="form-group">
+            {{ form.phone_number_1.label }}
+            {{ form.phone_number_1(class="form-control", placeholder="Enter Primary Phone Number") }}
+            {% if form.phone_number_1.errors %}
+            <div class="error-message">{{ form.phone_number_1.errors[0] }}</div>
+            {% endif %}
+          </div>
+          <div class="form-group">
+            {{ form.phone_number_2.label }}
+            {{ form.phone_number_2(class="form-control", placeholder="Enter Secondary Phone Number") }}
+            {% if form.phone_number_2.errors %}
+            <div class="error-message">{{ form.phone_number_2.errors[0] }}</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h2 class="section-title">Address Information</h2>
+        {% if patient and patient.address_id %}
+        <div class="patient-address-box">
+          <h4>Saved Address</h4>
+          {{ patient.patient_address.region }}, {{ patient.patient_address.district }}, {{
+          patient.patient_address.location }}
+        </div>
+        {% endif %}
+        <div class="form-grid">
+          <div class="form-group">
+            {{ form.region.label }}
+            {{ form.region(class="form-control", id="region", onclick="loadDistricts()") }}
+            {% if form.region.errors %}
+            <div class="error-message">{{ form.region.errors[0] }}</div>
+            {% endif %}
+          </div>
+          <div class="form-group">
+            {{ form.district.label }}
+            {{ form.district(class="form-control", id="district") }}
+            {% if form.district.errors %}
+            <div class="error-message">{{ form.district.errors[0] }}</div>
+            {% endif %}
+          </div>
+          <div class="form-group extend">
+            {{ form.location.label }}
+            {{ form.location(class="form-control", placeholder="Enter Specific Location") }}
+            {% if form.location.errors %}
+            <div class="error-message">{{ form.location.errors[0] }}</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Submit</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="{{ url_for('static', filename='js/location.js') }}"></script>
+{% endblock %}
