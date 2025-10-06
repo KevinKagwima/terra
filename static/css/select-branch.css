@@ -88,7 +88,8 @@
 
 #navigate-link button,
 #remove-link button,
-#open-link button {
+#open-link button,
+#edit-link button {
   background-color: var(--light-green);
   width: 100%;
   color: var(--white);
@@ -108,6 +109,10 @@
 
 #open-link button {
   background-color: var(--yellow);
+}
+
+#edit-link button {
+  background-color: orange;
 }
 
 #navigate-link button:hover {

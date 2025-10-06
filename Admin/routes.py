@@ -88,7 +88,7 @@ def add_branch():
         alias = slugify(form.name.data),
         region = form.region.data,
         district = form.district.data,
-        clinic_type_id = ClinicType.query.filter_by(name=form.branch_type.data).first().id
+        clinic_type_id = ClinicType.query.filter_by(id=form.branch_type.data).first().id
       )
       db.session.add(new_clinic)
       db.session.commit()
@@ -124,6 +124,38 @@ def populate_inventory(branch_id):
   except Exception as e:
     db.session.rollback()
     print(f"{str(e)}")
+
+@admin.route("/edit-branch/<string:branch_name>", methods=["POST", "GET"])
+@login_required
+@fresh_login_required
+@role_required(["Admin"])
+def edit_branch(branch_name):
+  branch = Clinic.query.filter_by(alias=branch_name).first()
+  if not branch:
+    flash("Clinic branch not found", "danger")
+    return redirect(url_for('admin.clinic_branches'))
+
+  form = AddClinicForm(obj=branch)
+  if form.validate_on_submit():
+    cache.clear()
+    try:
+      form.populate_obj(obj=branch)
+      db.session.commit()
+      flash("Branch updated successfully", "success")
+      return redirect(url_for("admin.clinic_branches"))
+    except Exception as e:
+      flash(f"{str(e)}", "danger")
+      return redirect(url_for("admin.clinic_branches"))
+
+  if form.errors != {}:
+    for err_msg in form.errors.values():
+      flash(f"{err_msg}", "danger")
+
+  context = {
+    "form": form
+  }
+
+  return render_template("Main/edit-branch.html", **context)
 
 @admin.route("/load/branch/<string:branch_name>")
 @login_required
@@ -275,7 +307,7 @@ def add_medicine():
         new_medicine.name,
         new_inventory.quantity
       )
-      if new_inventory.quantity < 5:
+      if new_inventory.quantity < 10:
         NotificationService.create_low_inventory_notification(
           new_medicine.name,
           new_inventory.quantity
@@ -1116,7 +1148,7 @@ def record_transaction(prescription_id, diagnosis_id):
     new_payment.amount,
     f"{new_payment.patient_payment.first_name} {new_payment.patient_payment.last_name}"
   )
-  if inventory.quantity < 5:
+  if inventory.quantity < 10:
     NotificationService.create_low_inventory_notification(
       inventory.inventory.name,
       inventory.quantity

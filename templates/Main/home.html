@@ -29,7 +29,7 @@ Home
 {% endif %}
 <a data-tab="medical-data" class="nav-item">
   <i class="fas fa-hospital"></i>
-  Medical Data
+  Inventory
 </a>
 <a data-tab="lab-analysis" class="nav-item">
   <i class="fas fa-microscope"></i>
@@ -560,7 +560,7 @@ Home
 <div id="medical-data" class="tabContent">
   <div class="header">
     <div class="page-title">
-      <h1>Medical Data</h1>
+      <h1>Inventory</h1>
     </div>
     <div class="page-actions">
       <a href="{{ url_for('admin.add_medicine') }}">
@@ -603,7 +603,7 @@ Home
           <td>{{ "Tsh {:,}".format(inventory.inventory.price) }}</td>
           <td>{{ inventory.quantity }}</td>
           <td>
-            {% if inventory.quantity > 5 %}
+            {% if inventory.quantity > 10 %}
             <span class="status-badge completed">Good Quantity</span>
             {% else %}
             <span class="status-badge cancelled">Low Quantity</span>

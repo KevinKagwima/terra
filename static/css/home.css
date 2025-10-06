@@ -73,6 +73,10 @@
   align-items: center;
 }
 
+.red-not {
+  background-color: red;
+}
+
 .notifications-header h4 {
   margin: 0;
   font-size: 1rem;

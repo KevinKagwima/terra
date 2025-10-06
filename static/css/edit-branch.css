@@ -1,0 +1,17 @@
+.container {
+  background-color: var(--white);
+  border-radius: 10px;
+  padding: 2rem;
+  display: grid;
+  gap: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.container-header h1 {
+  color: var(--black);
+}
+
+.container form {
+  display: grid;
+  gap: 1rem;
+}

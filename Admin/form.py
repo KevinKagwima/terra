@@ -94,7 +94,7 @@ class FeedbackForm(FlaskForm):
 
 class AddClinicForm(FlaskForm):
   name = StringField('Clinic Name', validators=[DataRequired(message="Clinic Name required"), Length(max=150)])
-  branch_type = SelectField(label="Branch Type", choices=[("","Select Branch Type"),("Headquarters","Headquarters"), ("Other","Other")], validators=[DataRequired(message="Branch Type required")])
+  clinic_type_id = SelectField(label="Branch Type", choices=[("","Select Branch Type"),("1","Headquarters"), ("2","Other")], validators=[DataRequired(message="Branch Type required")])
   region = StringField('Region', validators=[DataRequired(message="Region field required")])
   district = StringField('District', validators=[DataRequired(message="District field required")])
 
