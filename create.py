@@ -23,7 +23,7 @@ def create_tables():
   print("Tables created successully")
 
 def add_roles():
-  roles = ["Admin", "Clerk", "Stock Controller", "Accountant", "Lab Tech"]
+  roles = ["SuperAdmin", "Admin", "Clerk", "Stock Controller", "Accountant", "Lab Tech"]
   for role in roles:
     new_role = Role(
       name = role

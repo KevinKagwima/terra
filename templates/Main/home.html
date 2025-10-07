@@ -21,7 +21,7 @@ Home
   <i class="fas fa-user-injured"></i>
   Patients
 </a>
-{% if current_user.staff_role.name == "Admin" %}
+{% if current_user.staff_role.name == "SuperAdmin" or current_user.staff_role.name == "Admin" %}
 <a data-tab="staff" class="nav-item">
   <i class="fas fa-user"></i>
   Staff
@@ -43,7 +43,8 @@ Home
   <i class="fas fa-prescription-bottle"></i>
   Prescriptions
 </a>
-{% if current_user.staff_role.name == "Admin" or current_user.staff_role.name == "Accountant" %}
+{% if current_user.staff_role.name == "SuperAdmin" or current_user.staff_role.name == "Admin" or
+current_user.staff_role.name == "Accountant" %}
 <a data-tab="transaction" class="nav-item">
   <i class="fas fa-wallet"></i>
   Transactions
@@ -89,7 +90,8 @@ Home
     </div>
   </div>
   <div class="stats-grid">
-    {% if current_user.staff_role.name == "Admin" or current_user.staff_role.name == "Accountant" %}
+    {% if current_user.staff_role.name == "SuperAdmin" or current_user.staff_role.name == "Admin" or
+    current_user.staff_role.name == "Accountant" %}
     <div class="stat-card">
       <h3>Revenue</h3>
       <div class="value">
@@ -442,7 +444,7 @@ Home
     {% endfor %}
   </div>
 </div>
-{% if current_user.staff_role.name == "Admin" %}
+{% if current_user.staff_role.name == "SuperAdmin" or current_user.staff_role.name == "Admin" %}
 <div id="staff" class="tabContent">
   <div class="header">
     <div class="page-title">
@@ -496,7 +498,7 @@ Home
           <td>{{ staff.email }}</td>
           <td>{{ staff.staff_role.name }}</td>
           <td>
-            {% if staff.staff_role.name == "Admin" %}
+            {% if staff.staff_role.name == "SuperAdmin" %}
             Overseer
             {% else %}
             {{ staff.clinic_staff.name }}
@@ -943,7 +945,8 @@ Home
   <p class="else">No data to show</p>
   {% endif %}
 </div>
-{% if current_user.staff_role.name == "Admin" or current_user.staff_role.name == "Accountant" %}
+{% if current_user.staff_role.name == "SuperAdmin" or current_user.staff_role.name == "Admin" or
+current_user.staff_role.name == "Accountant" %}
 <div id="transaction" class="tabContent">
   <div class="header">
     <div class="page-title">

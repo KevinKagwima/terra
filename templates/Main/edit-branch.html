@@ -15,7 +15,7 @@ Select Branch
   <div class="container-header">
     <h1>Edit Clinic</h1>
   </div>
-  <form method="post">
+  <form id="editClinicForm" method="post">
     {{ form.csrf_token }}
     <div class="form-group extend">
       {{ form.name.label }}
@@ -33,14 +33,18 @@ Select Branch
       {{ form.clinic_type_id.label }}
       {{ form.clinic_type_id }}
     </div>
-
-    <div class="form-actions">
-      <a href="#">
-        <button type="submit" class="btn-primary" id="cancelBtn">Back</button>
-      </a>
-      <button type="submit" class="btn-primary">Update Branch</button>
+    <div class="form-group extend">
+      {{ form.owner_id.label }}
+      {{ form.owner_id }}
     </div>
   </form>
+
+  <div class="form-actions">
+    <a href="{{ url_for('admin.clinic_branches') }}">
+      <button class="btn-primary" id="cancelBtn">Back</button>
+    </a>
+    <button form="editClinicForm" type="submit" class="btn-primary">Update Branch</button>
+  </div>
 </div>
 
 {% endblock %}

@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, IntegerField, SelectField, TextAreaField, PasswordField, BooleanField
+from wtforms import StringField, IntegerField, SelectField, TextAreaField, PasswordField
 from wtforms.validators import Length, DataRequired, Optional, NumberRange, EqualTo
 from Models.users import Staff
 
@@ -39,8 +39,8 @@ class AddPatientForm(FlaskForm):
   age = IntegerField('Age', validators=[DataRequired(message="Age Required")])
   gender = SelectField('Gender', choices=[('', 'Select Gender'), ('male', 'Male'), ('female', 'Female')
   ], validators=[DataRequired(message="Gender field required")])
-  phone_number_1 = StringField('Primary Phone', validators=[DataRequired(message="Phone Number required"), Length(max=20)])
-  phone_number_2 = StringField('Secondary Phone', validators=[Optional(), Length(max=20)])
+  phone_number_1 = StringField('Primary Phone', validators=[DataRequired(message="Phone Number required"), Length(max=10)])
+  phone_number_2 = StringField('Secondary Phone', validators=[Optional(), Length(max=10)])
   region = SelectField('Region', choices=[], validators=[Optional()])
   district = SelectField('District', choices=[], validators=[Optional()])
   location = StringField('Location', validators=[Optional(), Length(max=50)])
@@ -95,6 +95,7 @@ class FeedbackForm(FlaskForm):
 class AddClinicForm(FlaskForm):
   name = StringField('Clinic Name', validators=[DataRequired(message="Clinic Name required"), Length(max=150)])
   clinic_type_id = SelectField(label="Branch Type", choices=[("","Select Branch Type"),("1","Headquarters"), ("2","Other")], validators=[DataRequired(message="Branch Type required")])
+  owner_id = SelectField(label="Branch Admin Supervisor (Optional)", choices=[("","Choose an admin")], validators=[Optional()])
   region = StringField('Region', validators=[DataRequired(message="Region field required")])
   district = StringField('District', validators=[DataRequired(message="District field required")])
 

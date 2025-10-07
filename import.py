@@ -63,12 +63,12 @@ def add_admin():
     last_name = "Maina",
     email = "test@gmail.com",
     phone = "0787654320",
-    role_id = Role.query.filter_by(name="Admin").first().id,
+    role_id = Role.query.filter_by(name="SuperAdmin").first().id,
     password = bcrypt.generate_password_hash("111111").decode("utf-8"),
   )
   db.session.add(new_staff)
   db.session.commit()
-  print(f"New Admin addedd")
+  print(f"New Admin added")
 
 if __name__ == "__main__":
   with app.app_context():

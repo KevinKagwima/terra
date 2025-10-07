@@ -60,9 +60,12 @@ region_districts = {
 @admin.route("/branches")
 @login_required
 @fresh_login_required
-@role_required(["Admin"])
+@role_required(["SuperAdmin", "Admin"])
 def clinic_branches():
   form = AddClinicForm()
+
+  form.owner_id.choices = [(staff.id, f"{staff.first_name} {staff.last_name}") for staff in Staff.query.filter_by(role_id=Role.query.filter_by(name="Admin").first().id).all()]
+  form.owner_id.choices.insert(0, ("", "-- Select an admin --"))
   
   context = {
     "form": form,
@@ -77,9 +80,12 @@ def clinic_branches():
 @admin.route("/select-branch", methods=["POST"])
 @login_required
 @fresh_login_required
-@role_required(["Admin"])
+@role_required(["SuperAdmin", "Admin"])
 def add_branch():
   form = AddClinicForm()
+  form.owner_id.choices = [(staff.id, f"{staff.first_name} {staff.last_name}") for staff in Staff.query.filter_by(role_id=Role.query.filter_by(name="Admin").first().id).all()]
+  form.owner_id.choices.insert(0, ("", "-- Select an admin --"))
+
   if form.validate_on_submit():
     cache.clear()
     try:
@@ -88,7 +94,8 @@ def add_branch():
         alias = slugify(form.name.data),
         region = form.region.data,
         district = form.district.data,
-        clinic_type_id = ClinicType.query.filter_by(id=form.branch_type.data).first().id
+        clinic_type_id = ClinicType.query.filter_by(id=form.clinic_type_id.data).first().id,
+        owner_id = form.owner_id.data if form.owner_id.data else None
       )
       db.session.add(new_clinic)
       db.session.commit()
@@ -128,7 +135,7 @@ def populate_inventory(branch_id):
 @admin.route("/edit-branch/<string:branch_name>", methods=["POST", "GET"])
 @login_required
 @fresh_login_required
-@role_required(["Admin"])
+@role_required(["SuperAdmin", "Admin"])
 def edit_branch(branch_name):
   branch = Clinic.query.filter_by(alias=branch_name).first()
   if not branch:
@@ -136,10 +143,16 @@ def edit_branch(branch_name):
     return redirect(url_for('admin.clinic_branches'))
 
   form = AddClinicForm(obj=branch)
+  
+  form.owner_id.choices = [(staff.id, f"{staff.first_name} {staff.last_name}") for staff in Staff.query.filter_by(role_id=Role.query.filter_by(name="Admin").first().id).all()]
+  form.owner_id.choices.insert(0, ("", "-- Select an admin --"))
+
   if form.validate_on_submit():
     cache.clear()
     try:
       form.populate_obj(obj=branch)
+      if not form.owner_id.data:
+        branch.owner_id = None
       db.session.commit()
       flash("Branch updated successfully", "success")
       return redirect(url_for("admin.clinic_branches"))
@@ -160,7 +173,7 @@ def edit_branch(branch_name):
 @admin.route("/load/branch/<string:branch_name>")
 @login_required
 @fresh_login_required
-@role_required(["Admin"])
+@role_required(["SuperAdmin", "Admin"])
 def load_clinic(branch_name):
   cache.clear()
   try:
@@ -180,7 +193,7 @@ def load_clinic(branch_name):
 @admin.route("/close-branch/<string:branch_name>")
 @login_required
 @fresh_login_required
-@role_required(["Admin"])
+@role_required(["SuperAdmin", "Admin"])
 def close_clinic(branch_name):
   cache.clear()
   try:
@@ -204,7 +217,7 @@ def close_clinic(branch_name):
 @admin.route("/reopen-branch/<string:branch_name>")
 @login_required
 @fresh_login_required
-@role_required(["Admin"])
+@role_required(["SuperAdmin", "Admin"])
 def reopen_clinic(branch_name):
   cache.clear()
   try:
@@ -229,7 +242,7 @@ def reopen_clinic(branch_name):
 def dashboard():
   form = StaffRegistrationForm()
   form.branch.choices = [(clinic.unique_id, clinic.name) for clinic in Clinic.query.all()]
-  form.role.choices = [(role.unique_id, role.name) for role in Role.query.all()]
+  form.role.choices = [(role.unique_id, role.name) for role in Role.query.all() if role.name != "SuperAdmin"]
   
   diagnosis_disease_ids = [diagnosis for diagnosis in db.session.query(DiagnosisDetails.disease_id, func.count(DiagnosisDetails.disease_id).label('count')).group_by(DiagnosisDetails.disease_id).order_by(func.count(DiagnosisDetails.disease_id).desc()).filter_by(clinic_id=session["clinic_id"]).limit(limit=5).all()]
 
@@ -283,7 +296,7 @@ def patient_search(search_text):
 @login_required
 @fresh_login_required
 @branch_required()
-@role_required(["Admin"])
+@role_required(["SuperAdmin", "Admin"])
 def add_medicine():
   cache.clear()
   form = AddMedicineForm()
@@ -334,7 +347,7 @@ def add_medicine():
 @login_required
 @fresh_login_required
 @branch_required()
-@role_required(["Admin", "Stock Controller"])
+@role_required(["SuperAdmin","Admin", "Stock Controller"])
 def edit_medicine(inventory_id):
   inventory = Inventory.query.filter_by(unique_id=inventory_id).first()
   if not inventory:
@@ -378,7 +391,7 @@ def edit_medicine(inventory_id):
 @login_required
 @fresh_login_required
 @branch_required()
-@role_required(["Admin"])
+@role_required(["SuperAdmin", "Admin"])
 def remove_medicine(inventory_id):
   cache.clear()
   inventory = Inventory.query.filter_by(unique_id=inventory_id).first()
@@ -402,7 +415,7 @@ def remove_medicine(inventory_id):
 @login_required
 @fresh_login_required
 @branch_required()
-@role_required(["Admin"])
+@role_required(["SuperAdmin", "Admin"])
 def add_disease():
   cache.clear()
   form = AddDiseaseForm()
@@ -439,7 +452,7 @@ def add_disease():
 @login_required
 @fresh_login_required
 @branch_required()
-@role_required(["Admin"])
+@role_required(["SuperAdmin", "Admin"])
 def edit_disease(disease_id):
   disease = Disease.query.filter_by(unique_id=disease_id).first()
   if not disease:
@@ -474,7 +487,7 @@ def edit_disease(disease_id):
 @login_required
 @fresh_login_required
 @branch_required()
-@role_required(["Admin"])
+@role_required(["SuperAdmin", "Admin"])
 def remove_disease(disease_id):
   cache.clear()
   disease = Disease.query.filter_by(unique_id=disease_id).first()
@@ -499,7 +512,7 @@ def remove_disease(disease_id):
 @login_required
 @fresh_login_required
 @branch_required()
-@role_required(["Admin", "Clerk"])
+@role_required(["SuperAdmin", "Admin", "Clerk"])
 def add_patient():
   cache.clear()
   form = AddPatientForm()
@@ -556,7 +569,7 @@ def add_patient():
 @login_required
 @fresh_login_required
 @branch_required()
-@role_required(["Admin", "Clerk"])
+@role_required(["SuperAdmin", "Admin", "Clerk"])
 @cache.cached(timeout=600)
 def get_districts(region):
   return jsonify(districts=region_districts.get(region, []))
@@ -565,7 +578,7 @@ def get_districts(region):
 @login_required
 @fresh_login_required
 @branch_required()
-@role_required(["Admin", "Clerk"])
+@role_required(["SuperAdmin", "Admin", "Clerk"])
 def edit_patient(patient_id):
   patient = Patients.query.filter_by(unique_id = patient_id).first()
   if not patient:
@@ -617,7 +630,7 @@ def edit_patient(patient_id):
 @login_required
 @fresh_login_required
 @branch_required()
-@role_required(["Admin"])
+@role_required(["SuperAdmin", "Admin"])
 def remove_patient(patient_id):
   cache.clear()
   patient = Patients.query.filter_by(unique_id = patient_id).first()
@@ -637,7 +650,7 @@ def remove_patient(patient_id):
 @login_required
 @fresh_login_required
 @branch_required()
-@role_required(["Admin"])
+@role_required(["SuperAdmin", "Admin"])
 def remove_staff(staff_id):
   cache.clear()
   staff = Staff.query.filter_by(unique_id = staff_id).first()
@@ -658,7 +671,7 @@ def remove_staff(staff_id):
 @login_required
 @fresh_login_required
 @branch_required()
-@role_required(["Admin", "Clerk"])
+@role_required(["SuperAdmin", "Admin", "Clerk"])
 def patient_profile(patient_id):
   patient = Patients.query.filter_by(unique_id = patient_id).first()
   if not patient:
@@ -690,7 +703,7 @@ def patient_profile(patient_id):
 @login_required
 @fresh_login_required
 @branch_required()
-@role_required(["Admin", "Lab Tech", "Clerk"])
+@role_required(["SuperAdmin", "Admin", "Lab Tech", "Clerk"])
 def create_appointment(patient_id):
   cache.clear()
   patient = Patients.query.filter_by(unique_id=patient_id).first()
@@ -719,7 +732,7 @@ def create_appointment(patient_id):
 @login_required
 @fresh_login_required
 @branch_required()
-@role_required(["Admin", "Lab Tech", "Clerk"])
+@role_required(["SuperAdmin", "Admin", "Lab Tech", "Clerk"])
 def appointment(appointment_id):
   appointment = Appointment.query.filter_by(unique_id=appointment_id).first()
   if not appointment:
@@ -773,7 +786,7 @@ def appointment(appointment_id):
 @login_required
 @fresh_login_required
 @branch_required()
-@role_required(["Admin", "Clerk"])
+@role_required(["SuperAdmin", "Admin", "Clerk"])
 def add_lab_analysis(appointment_id):
   cache.clear()
   appointment = Appointment.query.filter_by(unique_id=appointment_id).first()
@@ -826,7 +839,7 @@ def create_lab_analysis_details(lab_analysis_id, form):
 @login_required
 @fresh_login_required
 @branch_required()
-@role_required(["Admin", "Lab Tech"])
+@role_required(["SuperAdmin", "Admin", "Lab Tech"])
 def remove_lab_analysis(lab_analysis_id):
   cache.clear()
   lab_analysis = LabAnalysisDetails.query.filter_by(unique_id=lab_analysis_id).first()
@@ -849,7 +862,7 @@ def remove_lab_analysis(lab_analysis_id):
 @login_required
 @fresh_login_required
 @branch_required()
-@role_required(["Admin", "Lab Tech"])
+@role_required(["SuperAdmin", "Admin", "Lab Tech"])
 def approve_lab_analysis(lab_analysis_id):
   cache.clear()
   lab_analysis = LabAnalysis.query.filter_by(unique_id=lab_analysis_id).first()
@@ -880,7 +893,7 @@ def approve_lab_analysis(lab_analysis_id):
 @login_required
 @fresh_login_required
 @branch_required()
-@role_required(["Admin", "Lab Tech"])
+@role_required(["SuperAdmin", "Admin", "Lab Tech"])
 def add_diagnosis(appointment_id):
   cache.clear()
   appointment = Appointment.query.filter_by(unique_id=appointment_id).first()
@@ -948,7 +961,7 @@ def remove_diagnosis_disease(diagnosis_id):
 @login_required
 @fresh_login_required
 @branch_required()
-@role_required(["Admin", "Lab Tech"])
+@role_required(["SuperAdmin", "Admin", "Lab Tech"])
 def add_prescription(appointment_id):
   cache.clear()
   appointment = Appointment.query.filter_by(unique_id=appointment_id).first()
@@ -1030,7 +1043,7 @@ def remove_prescribed_medicine(prescription_id):
 @login_required
 @fresh_login_required
 @branch_required()
-@role_required(["Admin", "Lab Tech"])
+@role_required(["SuperAdmin", "Admin", "Lab Tech"])
 def complete_appointment(appointment_id):
   cache.clear()
   appointment = Appointment.query.filter_by(unique_id=appointment_id).first()
@@ -1071,7 +1084,7 @@ def complete_appointment(appointment_id):
 @login_required
 @fresh_login_required
 @branch_required()
-@role_required(["Admin", "Clerk"])
+@role_required(["SuperAdmin", "Admin", "Clerk"])
 def patient_feedback(appointment_id):
   cache.clear()
   try:
@@ -1099,7 +1112,7 @@ def patient_feedback(appointment_id):
 @login_required
 @fresh_login_required
 @branch_required()
-@role_required(["Admin", "Accountant"])
+@role_required(["SuperAdmin", "Admin", "Accountant"])
 def prescription_payment(prescription_id):
   cache.clear()
   prescription = Prescription.query.filter_by(unique_id=prescription_id).first()
