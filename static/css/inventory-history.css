@@ -1,0 +1,277 @@
+.medicine-container {
+  display: grid;
+  gap: 2rem;
+  padding-bottom: 2rem;
+}
+
+/* Header */
+.medicine-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-left h1 {
+  font-size: 1.75rem;
+  color: var(--dark);
+}
+
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--dark);
+  text-decoration: none;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.header-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-primary {
+  background-color: var(--light-green);
+  color: var(--white);
+}
+
+.btn-outline {
+  background-color: var(--yellow);
+  color: var(--white);
+}
+
+.btn-remove {
+  background-color: red;
+  color: var(--white);
+}
+
+/* Overview Cards */
+.overview-cards {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.overview-card {
+  background: white;
+  border-radius: var(--radius-m);
+  padding: 2rem;
+  box-shadow: var(--box-shadow);
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.card-icon {
+  height: 80px;
+  aspect-ratio: 1/1;
+  border-radius: 50%;
+  background: var(--light-grey);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--light-green-2);
+  font-size: 2rem;
+}
+
+.card-content {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.card-content h3 {
+  font-size: 1.5rem;
+}
+
+#price {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--yellow);
+}
+
+.medicine-meta {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--light-green);
+  font-weight: 900;
+  font-size: 0.875rem;
+}
+
+/* Table Section */
+.table-section {
+  background: white;
+  border-radius: var(--radius-m);
+  padding: 2rem;
+  box-shadow: var(--box-shadow);
+}
+
+.table-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+.else {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.else p {
+  color: red;
+  font-weight: 700;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  text-align: left;
+  padding: 1rem;
+  font-weight: 600;
+  color: var(--gray);
+  font-size: 0.875rem;
+  border-bottom: 1px solid var(--light-gray);
+}
+
+td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--light-gray);
+  font-size: 0.9375rem;
+}
+
+.stock-in {
+  color: var(--success);
+  font-weight: 600;
+}
+
+.status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.status-badge.refilled {
+  background: #e6f7ee;
+  color: #10b981;
+}
+
+.status-badge.normal {
+  background: #f1f5f9;
+  color: var(--gray);
+}
+
+/* Table Footer */
+.table-footer {
+  display: flex;
+  justify-content: center;
+}
+
+.pagination {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.pagination-btn {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #e2e8f0;
+  background: white;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  border-color: var(--primary);
+}
+
+.pagination-btn.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .medicine-container {
+    padding: 1rem;
+  }
+
+  .medicine-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .overview-card {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .medicine-meta {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .table-container {
+    font-size: 0.875rem;
+  }
+}

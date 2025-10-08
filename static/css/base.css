@@ -20,7 +20,9 @@
   --yellow: #dd8d33;
   --font: "Roboto", sans-serif;
   --radius-s: 0.3rem;
+  --radius-m: 0.8rem;
   --radius-l: 10rem;
+  --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 ::-webkit-scrollbar {

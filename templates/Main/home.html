@@ -5,7 +5,6 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <link rel="stylesheet" href="{{url_for('static',filename='css/home.css')}}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}
 
 {% block title %}
@@ -57,7 +56,7 @@ current_user.staff_role.name == "Accountant" %}
 {% endblock %}
 
 {% block body %}
-<div id="dashboard" class="tabContent active">
+<div id="dashboard" class="tabContent">
   <div class="header">
     <div class="page-title">
       <h1>Dashboard</h1>
@@ -559,7 +558,7 @@ current_user.staff_role.name == "Accountant" %}
   </div>
 </div>
 {% endif %}
-<div id="medical-data" class="tabContent">
+<div id="medical-data" class="tabContent active">
   <div class="header">
     <div class="page-title">
       <h1>Inventory</h1>
@@ -601,7 +600,13 @@ current_user.staff_role.name == "Accountant" %}
         {% for inventory in inventories|sort(attribute="id", reverse=true) %}
         <tr id="medicine-name">
           <th>MD - {{ inventory.inventory.unique_id }}</th>
-          <td>{{ inventory.inventory.name|truncate(60) }}</td>
+          <td>
+            <a style="max-width: max-content; color: var(--yellow); display: flex; align-items: center; gap:0.6rem;"
+              href="{{ url_for('admin.inventory_history', inventory_id=inventory.unique_id) }}">
+              {{ inventory.inventory.name|truncate(60) }}
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            </a>
+          </td>
           <td>{{ "Tsh {:,}".format(inventory.inventory.price) }}</td>
           <td>{{ inventory.quantity }}</td>
           <td>

@@ -5,7 +5,7 @@ from flask_login import login_required, fresh_login_required
 from Models.base_model import db, get_local_time
 from Models.users import Role
 from Models.users import Patients, PatientAddress, Staff
-from Models.medicine import Medicine, Inventory
+from Models.medicine import Medicine, Inventory, InventoryHistory
 from Models.diseases import Disease
 from Models.payment import Payment
 from Models.lab_analysis import LabAnalysis, LabAnalysisDetails
@@ -308,6 +308,7 @@ def add_medicine():
       )
       db.session.add(new_medicine)
       db.session.commit()
+
       new_inventory = Inventory(
         quantity = form.quantity.data,
         medicine_id = new_medicine.id,
@@ -315,11 +316,15 @@ def add_medicine():
       )
       db.session.add(new_inventory)
       db.session.commit()
+
+      record_opening_stock(new_inventory.id, new_inventory.quantity)
+
       NotificationService.create_new_medicine_notification(
         new_medicine.id,
         new_medicine.name,
         new_inventory.quantity
       )
+
       if new_inventory.quantity < 10:
         NotificationService.create_low_inventory_notification(
           new_medicine.name,
@@ -343,6 +348,14 @@ def add_medicine():
     timeout=600
   )
 
+def record_opening_stock(inventory_id, stock_number):
+  inventory_history = InventoryHistory(
+    inventory_id = inventory_id,
+    stock_added = stock_number
+  )
+  db.session.add(inventory_history)
+  db.session.commit()
+
 @admin.route("/edit/medicine/<int:inventory_id>", methods=["POST", "GET"])
 @login_required
 @fresh_login_required
@@ -363,8 +376,11 @@ def edit_medicine(inventory_id):
       inventory.inventory.price = form.price.data
       if form.quantity.data:
         inventory.quantity = inventory.quantity + form.quantity.data
+        record_opening_stock(inventory.id, form.quantity.data)
       db.session.commit()
+
       flash("Medicine updated successfully", "success")
+
       if inventory.quantity < 5:
         NotificationService.create_low_inventory_notification(
           inventory.inventory.name,
@@ -387,6 +403,23 @@ def edit_medicine(inventory_id):
     timeout=600
   )
 
+@admin.route("/inventory/<int:inventory_id>/history")
+def inventory_history(inventory_id):
+  inventory = Inventory.query.filter_by(unique_id=inventory_id).first()
+  if not inventory:
+    flash("Could not open medicine information", "danger")
+    return redirect(url_for('admin.dashboard'))
+  
+  context = {
+    "inventory": inventory,
+    "history": InventoryHistory.query.filter_by(inventory_id=inventory.id).all()
+  }
+
+  return CachedResponse(
+    response = make_response(render_template("Main/inventory-history.html", **context)),
+    timeout=600
+  )
+
 @admin.route("/remove/medicine/<int:inventory_id>")
 @login_required
 @fresh_login_required
@@ -399,10 +432,13 @@ def remove_medicine(inventory_id):
     flash("Inventory not found", category="danger")
     return redirect(url_for("admin.dashboard"))  
   try:
+    remove_inventory_history(inventory.id)
+
     NotificationService.create_remove_medicine_notification(
       inventory.id,
       f"{inventory.inventory.name}"
     )
+    
     db.session.delete(inventory)
     db.session.commit()
     flash("Medicine removed successfully", "success")
@@ -410,6 +446,12 @@ def remove_medicine(inventory_id):
     flash(f"Error: {str(e)}", "danger")
 
   return redirect(url_for('admin.dashboard'))
+
+def remove_inventory_history(inventory_id):
+  inventory_history = InventoryHistory.query.filter_by(inventory_id=inventory_id).all()
+  for history in inventory_history:
+    db.session.delete(history)
+  db.session.commit()
 
 @admin.route("/add/disease", methods=["POST", "GET"])
 @login_required

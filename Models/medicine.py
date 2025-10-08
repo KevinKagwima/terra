@@ -1,4 +1,4 @@
-from Models.base_model import db, BaseModel
+from Models.base_model import db, BaseModel, get_local_time
 from Models.clinic import Clinic
 
 class Medicine(BaseModel, db.Model):
@@ -16,6 +16,16 @@ class Inventory(BaseModel, db.Model):
   clinic_id = db.Column(db.Integer, db.ForeignKey('clinic.id'))
   medicine_id = db.Column(db.Integer, db.ForeignKey('medicine.id'))
   quantity = db.Column(db.Integer(), default=0)
+  inventory_hostory = db.relationship("InventoryHistory", backref="inventory_history", lazy=True)
 
   def __repr__(self):
     return f"{self.clinic_id} - {self.quantity}"
+
+class InventoryHistory(BaseModel, db.Model):
+  __tablename__ = "inventory_history"
+  inventory_id = db.Column(db.Integer, db.ForeignKey('inventory.id'))
+  stock_added = db.Column(db.Integer(), default=0)
+  date_updated = db.Column(db.DateTime(), default=get_local_time())
+
+  def __repr__(self):
+    return f"{self.inventory_id} - {self.stock_added}"

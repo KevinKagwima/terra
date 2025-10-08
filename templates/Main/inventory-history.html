@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="{{url_for('static',filename='css/inventory-history.css')}}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block title %}
+Inventory History {{ inventory.inventory.name }}
+{% endblock %}
+
+{% block nav %}
+<a href="{{ url_for('admin.dashboard') }}" class="nav-item">
+  <i class="fas fa-chevron-left"></i>
+  Back
+</a>{% endblock %}
+
+{% block body %}
+<div class="medicine-container">
+  <!-- Header -->
+  <div class="medicine-header">
+    <div class="header-left">
+      <a href="{{ url_for('admin.dashboard') }}" class="back-btn">
+        <i class="fas fa-arrow-left"></i> Back
+      </a>
+      <h1>Medicine Stock Details</h1>
+    </div>
+    <div class="header-actions">
+      <a href="{{ url_for('admin.edit_medicine', inventory_id=inventory.unique_id) }}">
+        <button class="btn btn-outline">
+          <i class="fas fa-edit"></i> Edit Medicine
+        </button>
+      </a>
+      <a href="{{ url_for('admin.remove_medicine', inventory_id=inventory.unique_id) }}">
+        <button class="btn btn-remove">
+          <i class="fas fa-edit"></i> Delete Medicine
+        </button>
+      </a>
+    </div>
+  </div>
+
+  <!-- Medicine Overview -->
+  <div class="overview-cards">
+    <div class="overview-card">
+      <div class="card-icon">
+        <i class="fas fa-pills"></i>
+      </div>
+      <div class="card-content">
+        <div class="card-info-stats">
+          <h3>{{ inventory.inventory.name }}</h3>
+          <span id="price">{{ "Tsh {:,}".format(inventory.inventory.price) }}</span>
+          <div class="medicine-meta">
+            <h4>Current Quantity</h4>
+            <span class="meta-item">
+              <i class="fas fa-boxes"></i>
+              {{ "{:,}".format(inventory.quantity) }}
+            </span>
+          </div>
+        </div>
+        {% if inventory.quantity > 10 %}
+        <span class="status-badge completed">Good Quantity</span>
+        {% else %}
+        <span class="status-badge cancelled">Low Quantity</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Stock Movement Table -->
+  <div class="table-section">
+    <div class="section-header">
+      <h2>Inventory History</h2>
+      <!-- <div class="table-actions">
+        <button class="btn btn-outline">
+          <i class="fas fa-download"></i> Export
+        </button>
+      </div> -->
+    </div>
+
+    <div class="table-container">
+      {% if history %}
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Opening Stock</th>
+            <th>Stock In</th>
+            <th>Stock Sold</th>
+            <th>Closing Stock</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Nov 15, 2023</td>
+            <td>1,500</td>
+            <td><span class="stock-in">+500</span></td>
+            <td>42</td>
+            <td>1,958</td>
+            <td><span class="status-badge refilled">Refilled</span></td>
+          </tr>
+          <tr>
+            <td>Nov 14, 2023</td>
+            <td>1,542</td>
+            <td>-</td>
+            <td>38</td>
+            <td>1,500</td>
+            <td><span class="status-badge normal">Normal</span></td>
+          </tr>
+          <tr>
+            <td>Nov 13, 2023</td>
+            <td>1,580</td>
+            <td>-</td>
+            <td>45</td>
+            <td>1,542</td>
+            <td><span class="status-badge normal">Normal</span></td>
+          </tr>
+          <tr>
+            <td>Nov 12, 2023</td>
+            <td>1,625</td>
+            <td>-</td>
+            <td>52</td>
+            <td>1,580</td>
+            <td><span class="status-badge normal">Normal</span></td>
+          </tr>
+          <tr>
+            <td>Nov 11, 2023</td>
+            <td>1,677</td>
+            <td>-</td>
+            <td>48</td>
+            <td>1,625</td>
+            <td><span class="status-badge normal">Normal</span></td>
+          </tr>
+          <tr>
+            <td>Nov 10, 2023</td>
+            <td>800</td>
+            <td><span class="stock-in">+900</span></td>
+            <td>35</td>
+            <td>1,677</td>
+            <td><span class="status-badge refilled">Refilled</span></td>
+          </tr>
+        </tbody>
+      </table>
+      {% else %}
+      <div class="else">
+        <p>No history</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- <div class="table-footer">
+      <div class="pagination">
+        <button class="pagination-btn" disabled>
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="pagination-btn active">1</button>
+        <button class="pagination-btn">2</button>
+        <button class="pagination-btn">3</button>
+        <button class="pagination-btn">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    </div> -->
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="{{ url_for('static', filename='js/inventory.js') }}"></script>
+{% endblock %}
