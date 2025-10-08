@@ -7,7 +7,7 @@ class Diagnosis(BaseModel, db.Model):
   appointment_id = db.Column(db.Integer(), db.ForeignKey("appointment.id"))
   note = db.Column(db.Text())
   is_active = db.Column(db.Boolean(), default=True)
-  date_created = db.Column(db.DateTime(), default=get_local_time())
+  date_created = db.Column(db.DateTime())
   date_closed = db.Column(db.DateTime())
   diagnosis_details = db.relationship("DiagnosisDetails", backref="diagnosis_info", lazy=True)
   payment = db.relationship("Payment", backref="diagnosis_payment", lazy=True)

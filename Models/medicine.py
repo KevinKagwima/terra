@@ -25,7 +25,8 @@ class InventoryHistory(BaseModel, db.Model):
   __tablename__ = "inventory_history"
   inventory_id = db.Column(db.Integer, db.ForeignKey('inventory.id'))
   stock_added = db.Column(db.Integer(), default=0)
-  date_updated = db.Column(db.DateTime(), default=get_local_time())
+  stock_status = db.Column(db.String(20))
+  date_updated = db.Column(db.DateTime())
 
   def __repr__(self):
     return f"{self.inventory_id} - {self.stock_added}"

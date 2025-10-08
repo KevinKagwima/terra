@@ -95,7 +95,8 @@ def add_branch():
         region = form.region.data,
         district = form.district.data,
         clinic_type_id = ClinicType.query.filter_by(id=form.clinic_type_id.data).first().id,
-        owner_id = form.owner_id.data if form.owner_id.data else None
+        owner_id = form.owner_id.data if form.owner_id.data else None,
+        date_created = get_local_time()
       )
       db.session.add(new_clinic)
       db.session.commit()
@@ -317,7 +318,7 @@ def add_medicine():
       db.session.add(new_inventory)
       db.session.commit()
 
-      record_opening_stock(new_inventory.id, new_inventory.quantity)
+      record_opening_stock(new_inventory.id, new_inventory.quantity, "Opening Stock")
 
       NotificationService.create_new_medicine_notification(
         new_medicine.id,
@@ -348,10 +349,12 @@ def add_medicine():
     timeout=600
   )
 
-def record_opening_stock(inventory_id, stock_number):
+def record_opening_stock(inventory_id, stock_number, stock_status):
   inventory_history = InventoryHistory(
     inventory_id = inventory_id,
-    stock_added = stock_number
+    stock_added = stock_number,
+    date_updated = get_local_time(),
+    stock_status = stock_status
   )
   db.session.add(inventory_history)
   db.session.commit()
@@ -376,7 +379,7 @@ def edit_medicine(inventory_id):
       inventory.inventory.price = form.price.data
       if form.quantity.data:
         inventory.quantity = inventory.quantity + form.quantity.data
-        record_opening_stock(inventory.id, form.quantity.data)
+        record_opening_stock(inventory.id, form.quantity.data, "Refill")
       db.session.commit()
 
       flash("Medicine updated successfully", "success")
@@ -438,7 +441,7 @@ def remove_medicine(inventory_id):
       inventory.id,
       f"{inventory.inventory.name}"
     )
-    
+
     db.session.delete(inventory)
     db.session.commit()
     flash("Medicine removed successfully", "success")
@@ -758,7 +761,8 @@ def create_appointment(patient_id):
   if not existing_appointment:
     new_appointment = Appointment(
       patient_id = patient.id,
-      clinic_id = session["clinic_id"]
+      clinic_id = session["clinic_id"],
+      date_created = get_local_time()
     )
     db.session.add(new_appointment)
     db.session.commit()
@@ -848,7 +852,8 @@ def add_lab_analysis(appointment_id):
       new_lab_analysis = LabAnalysis(
         patient_id = appointment.patient_id,
         appointment_id = appointment.id,
-        clinic_id = session["clinic_id"]
+        clinic_id = session["clinic_id"],
+        date_created = get_local_time()
       )
       db.session.add(new_lab_analysis)
       db.session.flush()
@@ -958,7 +963,8 @@ def add_diagnosis(appointment_id):
         patient_id = patient.id,
         appointment_id = appointment.id,
         note = form.note.data,
-        clinic_id = session["clinic_id"]
+        clinic_id = session["clinic_id"],
+        date_created = get_local_time()
       )
       db.session.add(new_diagnosis)
       db.session.flush()
@@ -1026,7 +1032,8 @@ def add_prescription(appointment_id):
         patient_id = patient.id,
         appointment_id = appointment.id,
         note = form.note.data,
-        clinic_id = session["clinic_id"]
+        clinic_id = session["clinic_id"],
+        date_created = get_local_time()
       )
       db.session.add(new_prescription)
       db.session.flush()
@@ -1058,7 +1065,8 @@ def prescription_details(prescription_id, prescribed_medicine_ids):
         prescription_id = prescription.id,
         medicine_id = medicine.id,
         amount = medicine.price,
-        clinic_id = session["clinic_id"]
+        clinic_id = session["clinic_id"],
+        month_created = int(get_local_time().strftime("%m"))
       )
       db.session.add(new_prescription_detail)
       db.session.commit()
@@ -1139,7 +1147,8 @@ def patient_feedback(appointment_id):
     if form.validate_on_submit():
       new_feeback = Feedback(
         status = form.feedback.data,
-        appointment_id = appointment.id
+        appointment_id = appointment.id,
+        date_recorded = get_local_time()
       )
       db.session.add(new_feeback)
       db.session.commit()

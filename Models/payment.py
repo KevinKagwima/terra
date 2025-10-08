@@ -6,7 +6,7 @@ class Payment(BaseModel, db.Model):
   is_pending = db.Column(db.Boolean(), default=False)
   is_completed = db.Column(db.Boolean(), default=False)
   is_canceled = db.Column(db.Boolean(), default=False)
-  date_paid = db.Column(db.DateTime(), default=get_local_time())
+  date_paid = db.Column(db.DateTime())
   prescription_id = db.Column(db.Integer(), db.ForeignKey("prescription.id"))
   diagnosis_id = db.Column(db.Integer(), db.ForeignKey("diagnosis.id"))
   patient_id = db.Column(db.Integer(), db.ForeignKey("patient.id"))

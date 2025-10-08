@@ -9,7 +9,7 @@ class Appointment(BaseModel, db.Model):
   clinic_id = db.Column(db.Integer(), db.ForeignKey("clinic.id"))
   is_active = db.Column(db.Boolean(), default=True)
   is_paid = db.Column(db.Boolean(), default=False)
-  date_created = db.Column(db.DateTime(), default=get_local_time())
+  date_created = db.Column(db.DateTime())
   date_closed = db.Column(db.DateTime())
   date_paid = db.Column(db.DateTime())
   total = db.Column(db.Integer(), default=0)
@@ -25,4 +25,4 @@ class Feedback(BaseModel, db.Model):
   __tablename__ = "feedback"
   appointment_id = db.Column(db.Integer(), db.ForeignKey("appointment.id"))
   status = db.Column(db.String(20), nullable=False)
-  date_recorded = db.Column(db.DateTime(), default=get_local_time())
+  date_recorded = db.Column(db.DateTime())

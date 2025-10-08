@@ -31,7 +31,8 @@ Patient Appointment
       <span class="status-badge completed">Completed</span>
       {% endif %}
     </div>
-    {% if appointment.is_active == False and appointment.date_closed and current_user.staff_role.name == "Admin" and
+    {% if appointment.is_active == False and appointment.date_closed and (current_user.staff_role.name == "Admin" or
+    current_user.staff_role.name == "SuperAdmin") and
     appointment.date_paid %}
     <p>{{ appointment.date_closed.strftime("Closed on %d/%m/%Y at %I:%M %p") }}</p>
     <div class="appointment-feedback">
@@ -79,7 +80,8 @@ Patient Appointment
             <div class="accordion-header">
               <div class="action-header-box">
                 <h2 id="accordion-header">Lab Test #{{ lab_test.unique_id }}</h2>
-                {% if (current_user.staff_role.name == "Admin" or current_user.staff_role.name == "Lab Tech") and
+                {% if (current_user.staff_role.name == "Admin" or current_user.staff_role.name == "Lab Tech" or
+                current_user.staff_role.name == "SuperAdmin") and
                 lab_test.is_active and lab_test.lab_analysis_details %}
                 <a id="approvebtn"
                   href="{{ url_for('admin.approve_lab_analysis', lab_analysis_id=lab_test.unique_id) }}">Approve</a>

@@ -8,7 +8,7 @@ class Prescription(BaseModel, db.Model):
   note = db.Column(db.Text())
   is_active = db.Column(db.Boolean(), default=True)
   is_paid = db.Column(db.Boolean(), default=False)
-  date_created = db.Column(db.DateTime(), default=get_local_time())
+  date_created = db.Column(db.DateTime())
   date_closed = db.Column(db.DateTime())
   date_paid = db.Column(db.DateTime())
   total = db.Column(db.Integer(), default=0)
@@ -29,7 +29,7 @@ class PrescriptionDetails(BaseModel, db.Model):
   prescription_id = db.Column(db.Integer(), db.ForeignKey("prescription.id"))
   medicine_id = db.Column(db.Integer(), db.ForeignKey("medicine.id"))
   amount = db.Column(db.Integer(), default=0)
-  month_created = db.Column(db.Integer(), default=int(get_local_time().strftime("%m")))
+  month_created = db.Column(db.Integer())
   clinic_id = db.Column(db.Integer(), db.ForeignKey("clinic.id"))
 
   def __repr__(self):

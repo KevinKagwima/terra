@@ -7,7 +7,7 @@ class LabAnalysis(BaseModel, db.Model):
   clinic_id = db.Column(db.Integer(), db.ForeignKey("clinic.id"))
   is_active = db.Column(db.Boolean(), default=True)
   is_approved = db.Column(db.Boolean(), default=False)
-  date_created = db.Column(db.DateTime(), default=get_local_time())
+  date_created = db.Column(db.DateTime())
   date_approved = db.Column(db.DateTime())
   lab_analysis_details = db.relationship("LabAnalysisDetails", backref="lab_analysis", lazy=True)
 

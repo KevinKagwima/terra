@@ -22,7 +22,7 @@ class Clinic(BaseModel, db.Model):
   district = db.Column(db.String(50), nullable=False)
   is_active = db.Column(db.Boolean(), default=True)
   owner_id = db.Column(db.Integer())
-  date_created = db.Column(db.DateTime(), default=get_local_time())
+  date_created = db.Column(db.DateTime(),)
   clinic_type_id = db.Column(db.Integer(), db.ForeignKey("clinic_type.id"))
   appointment = db.relationship("Appointment", backref="clinic_appointment", lazy=True)
   diagnosis = db.relationship("DiagnosisDetails", backref="clinic_diagnosis", lazy=True)

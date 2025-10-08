@@ -1,5 +1,5 @@
 from flask import session
-from Models.base_model import db
+from Models.base_model import db, get_local_time
 from Models.notification import Notification, NotificationType
 
 class NotificationService:
@@ -10,7 +10,8 @@ class NotificationService:
       notification_type=notification_type,
       title=title,
       message=message,
-      related_id=related_id
+      related_id=related_id,
+      created_at = get_local_time()
     )
     db.session.add(notification)
     db.session.commit()

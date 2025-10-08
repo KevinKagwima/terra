@@ -94,54 +94,18 @@ Inventory History {{ inventory.inventory.name }}
           </tr>
         </thead>
         <tbody>
+          {% for record in history %}
           <tr>
-            <td>Nov 15, 2023</td>
+            <td>
+              {{ record.date_updated.strftime("%b %d, %Y at %I:%M %p") }}
+            </td>
             <td>1,500</td>
             <td><span class="stock-in">+500</span></td>
             <td>42</td>
             <td>1,958</td>
-            <td><span class="status-badge refilled">Refilled</span></td>
+            <td><span class="status-badge refilled">{{ record.stock_status }}</span></td>
           </tr>
-          <tr>
-            <td>Nov 14, 2023</td>
-            <td>1,542</td>
-            <td>-</td>
-            <td>38</td>
-            <td>1,500</td>
-            <td><span class="status-badge normal">Normal</span></td>
-          </tr>
-          <tr>
-            <td>Nov 13, 2023</td>
-            <td>1,580</td>
-            <td>-</td>
-            <td>45</td>
-            <td>1,542</td>
-            <td><span class="status-badge normal">Normal</span></td>
-          </tr>
-          <tr>
-            <td>Nov 12, 2023</td>
-            <td>1,625</td>
-            <td>-</td>
-            <td>52</td>
-            <td>1,580</td>
-            <td><span class="status-badge normal">Normal</span></td>
-          </tr>
-          <tr>
-            <td>Nov 11, 2023</td>
-            <td>1,677</td>
-            <td>-</td>
-            <td>48</td>
-            <td>1,625</td>
-            <td><span class="status-badge normal">Normal</span></td>
-          </tr>
-          <tr>
-            <td>Nov 10, 2023</td>
-            <td>800</td>
-            <td><span class="stock-in">+900</span></td>
-            <td>35</td>
-            <td>1,677</td>
-            <td><span class="status-badge refilled">Refilled</span></td>
-          </tr>
+          {% endfor %}
         </tbody>
       </table>
       {% else %}

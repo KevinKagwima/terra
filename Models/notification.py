@@ -20,7 +20,7 @@ class Notification(BaseModel, db.Model):
   message = db.Column(db.String(255), nullable=False)
   is_read = db.Column(db.Boolean, default=False)
   related_id = db.Column(db.Integer)
-  created_at = db.Column(db.DateTime, default=get_local_time())
+  created_at = db.Column(db.DateTime)
 
   def to_dict(self):
     return {
