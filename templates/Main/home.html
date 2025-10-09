@@ -925,7 +925,8 @@ current_user.staff_role.name == "Accountant" %}
           <span class="status-badge completed">Paid</span>
           {% elif prescription.appointment_prescription.is_active %}
           <span class="status-badge pending">Appointment Ongoing</span>
-          {% elif (current_user.staff_role.name == "Admin" or current_user.staff_role.name == "Accountant") and
+          {% elif (current_user.staff_role.name == "SuperAdmin" or current_user.staff_role.name == "Admin" or
+          current_user.staff_role.name == "Accountant") and
           prescription.is_paid == False %}
           <button id="pay-btn" class="btn btn-outline" data-id="{{ prescription.unique_id }}">
             <i class="fas fa-wallet"></i>

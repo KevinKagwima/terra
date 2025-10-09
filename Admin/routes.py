@@ -129,6 +129,9 @@ def populate_inventory(branch_id):
           )
           db.session.add(new_inventory)
           db.session.commit()
+
+          record_opening_stock(new_inventory.id, new_inventory.quantity, "Opening Stock", new_inventory.quantity)
+
   except Exception as e:
     db.session.rollback()
     print(f"{str(e)}")
@@ -318,7 +321,7 @@ def add_medicine():
       db.session.add(new_inventory)
       db.session.commit()
 
-      record_opening_stock(new_inventory.id, new_inventory.quantity, "Opening Stock")
+      record_opening_stock(new_inventory.id, form.quantity.data, "Opening Stock", new_inventory.quantity)
 
       NotificationService.create_new_medicine_notification(
         new_medicine.id,
@@ -349,7 +352,7 @@ def add_medicine():
     timeout=600
   )
 
-def record_opening_stock(inventory_id, stock_number, stock_status):
+def record_opening_stock(inventory_id, stock_number, stock_status, current_stock):
   inventory_history = InventoryHistory(
     inventory_id = inventory_id,
     stock_added = stock_number,
@@ -357,6 +360,10 @@ def record_opening_stock(inventory_id, stock_number, stock_status):
     stock_status = stock_status
   )
   db.session.add(inventory_history)
+  if inventory_history.stock_status == "Sale":
+    inventory_history.stock_before = current_stock + 1
+  else:
+    inventory_history.stock_before = current_stock - stock_number
   db.session.commit()
 
 @admin.route("/edit/medicine/<int:inventory_id>", methods=["POST", "GET"])
@@ -379,7 +386,7 @@ def edit_medicine(inventory_id):
       inventory.inventory.price = form.price.data
       if form.quantity.data:
         inventory.quantity = inventory.quantity + form.quantity.data
-        record_opening_stock(inventory.id, form.quantity.data, "Refill")
+        record_opening_stock(inventory.id, form.quantity.data, "Refill", inventory.quantity)
       db.session.commit()
 
       flash("Medicine updated successfully", "success")
@@ -415,7 +422,8 @@ def inventory_history(inventory_id):
   
   context = {
     "inventory": inventory,
-    "history": InventoryHistory.query.filter_by(inventory_id=inventory.id).all()
+    "history": InventoryHistory.query.filter(InventoryHistory.inventory_id==inventory.id, InventoryHistory.stock_status != "Sale").all(),
+    "sale_history": InventoryHistory.query.filter_by(inventory_id=inventory.id, stock_status="Sale").all()
   }
 
   return CachedResponse(
@@ -1196,6 +1204,7 @@ def record_transaction(prescription_id, diagnosis_id):
     if inventory:
       inventory.quantity = inventory.quantity - 1
       db.session.commit()
+
   new_payment = Payment(
     amount = prescription.total,
     is_completed = True,
@@ -1207,11 +1216,15 @@ def record_transaction(prescription_id, diagnosis_id):
   )
   db.session.add(new_payment)
   db.session.commit()
+
+  record_opening_stock(inventory.id, 1, "Sale", inventory.quantity)
+
   NotificationService.create_payment_notification(
     new_payment.id,
     new_payment.amount,
     f"{new_payment.patient_payment.first_name} {new_payment.patient_payment.last_name}"
   )
+
   if inventory.quantity < 10:
     NotificationService.create_low_inventory_notification(
       inventory.inventory.name,

@@ -68,7 +68,7 @@
 .overview-card {
   background: white;
   border-radius: var(--radius-m);
-  padding: 2rem;
+  padding: 1.5rem;
   box-shadow: var(--box-shadow);
   display: flex;
   gap: 1.5rem;
@@ -88,9 +88,8 @@
 }
 
 .card-content {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto;
   align-items: center;
   gap: 0.5rem;
   width: 100%;
@@ -100,6 +99,10 @@
   font-size: 1.5rem;
 }
 
+.main-stats {
+  width: max-content;
+}
+
 #price {
   font-size: 1.5rem;
   font-weight: 700;
@@ -107,8 +110,8 @@
 }
 
 .medicine-meta {
-  display: flex;
-  gap: 1.5rem;
+  display: grid;
+  margin-bottom: 0.3rem;
 }
 
 .meta-item {
@@ -117,7 +120,12 @@
   gap: 0.5rem;
   color: var(--light-green);
   font-weight: 900;
-  font-size: 0.875rem;
+  font-size: 2rem;
+}
+
+.medicine-meta h4 {
+  font-weight: 400;
+  font-size: 0.9rem;
 }
 
 /* Table Section */
@@ -150,6 +158,9 @@
 table {
   width: 100%;
   border-collapse: collapse;
+  background-color: aliceblue;
+  border-radius: var(--radius-m);
+  margin-top: 1rem;
 }
 
 th {

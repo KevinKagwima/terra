@@ -1,9 +1,9 @@
 from flask import Flask
 from flask_bcrypt import Bcrypt
-from Models.base_model import db
+from Models.base_model import db,  get_local_time
 from Models.users import Patients
 from Models.diseases import Disease
-from Models.medicine import Medicine, Inventory
+from Models.medicine import Medicine, InventoryHistory, Inventory
 from Models.users import Staff, Role
 from config import Config
 import csv

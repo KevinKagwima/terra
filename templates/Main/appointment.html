@@ -21,221 +21,227 @@ Patient Appointment
 {% endblock %}
 
 {% block body %}
-<div class="header">
-  <div class="page-title">
-    <div class="page-title-box">
-      <h1>Patient Appointment</h1>
-      {% if appointment.is_active %}
-      <span class="status-badge pending">Ongoing</span>
-      {% else %}
-      <span class="status-badge completed">Completed</span>
-      {% endif %}
-    </div>
-    {% if appointment.is_active == False and appointment.date_closed and (current_user.staff_role.name == "Admin" or
-    current_user.staff_role.name == "SuperAdmin") and
-    appointment.date_paid %}
-    <p>{{ appointment.date_closed.strftime("Closed on %d/%m/%Y at %I:%M %p") }}</p>
-    <div class="appointment-feedback">
-      <h4>Patient Feedback</h4>
-      {% if feedback %}
-      <div class="patient-feedback">
-        {% if feedback.status == "Recovered" %}
-        <p class="status-badge completed">{{ feedback.status }}</p>
-        {% elif feedback.status == "Not Recovered" %}
-        <p class="status-badge cancelled">{{ feedback.status }}</p>
+<div class="container">
+  <div class="header">
+    <div class="page-title">
+      <div class="page-title-box">
+        <h1>Patient Appointment</h1>
+        {% if appointment.is_active %}
+        <span class="status-badge pending">Ongoing</span>
+        {% else %}
+        <span class="status-badge completed">Completed</span>
         {% endif %}
       </div>
-      {% else %}
-      <form action="{{ url_for('admin.patient_feedback', appointment_id=appointment.unique_id) }}" method="post">
-        {{ form.csrf_token }}
-        <div class="input">
-          {{ form.feedback }}
+      {% if appointment.is_active == False and appointment.date_closed and (current_user.staff_role.name == "Admin" or
+      current_user.staff_role.name == "SuperAdmin") and
+      appointment.date_paid %}
+      <p>{{ appointment.date_closed.strftime("Closed on %d/%m/%Y at %I:%M %p") }}</p>
+      <div class="appointment-feedback">
+        <h4>Patient Feedback</h4>
+        {% if feedback %}
+        <div class="patient-feedback">
+          {% if feedback.status == "Recovered" %}
+          <p class="status-badge completed">{{ feedback.status }}</p>
+          {% elif feedback.status == "Not Recovered" %}
+          <p class="status-badge cancelled">{{ feedback.status }}</p>
+          {% endif %}
         </div>
-        <button type="submit">Update</button>
-      </form>
+        {% else %}
+        <form action="{{ url_for('admin.patient_feedback', appointment_id=appointment.unique_id) }}" method="post">
+          {{ form.csrf_token }}
+          <div class="input">
+            {{ form.feedback }}
+          </div>
+          <button type="submit">Update</button>
+        </form>
+        {% endif %}
+      </div>
       {% endif %}
     </div>
-    {% endif %}
   </div>
-</div>
-<div class="diagnosis-container">
-  <div class="patient-summary">
-    <div class="patient-info-sm">
-      <h4>{{ patient.first_name }} {{ patient.last_name }}</h4>
-      <p>{{ patient.age }} years old, <span style="text-transform: capitalize;">{{ patient.gender }}</span> • ID: PT -
-        {{
-        patient.unique_id }}</p>
+  <div class="diagnosis-container">
+    <div class="patient-summary">
+      <div class="patient-info-sm">
+        <h4>{{ patient.first_name }} {{ patient.last_name }}</h4>
+        <p>{{ patient.age }} years old, <span style="text-transform: capitalize;">{{ patient.gender }}</span> • ID: PT -
+          {{
+          patient.unique_id }}</p>
+      </div>
     </div>
-  </div>
 
-  <div class="form-section">
-    <div class="section-title">Lab Analysis</div>
-    {% if lab_analysis %}
-    <div class="form-section lab-info">
-      <div class="section-title">Test Uploaded</div>
-      <div class="lab-analysis">
-        {% for lab_test in lab_analysis|sort(attribute="date_created", reverse=True) %}
-        <div class="accordion">
-          <div class="accordion-item">
-            <div class="accordion-header">
-              <div class="action-header-box">
-                <h2 id="accordion-header">Lab Test #{{ lab_test.unique_id }}</h2>
-                {% if (current_user.staff_role.name == "Admin" or current_user.staff_role.name == "Lab Tech" or
-                current_user.staff_role.name == "SuperAdmin") and
-                lab_test.is_active and lab_test.lab_analysis_details %}
-                <a id="approvebtn"
-                  href="{{ url_for('admin.approve_lab_analysis', lab_analysis_id=lab_test.unique_id) }}">Approve</a>
-                {% endif %}
-              </div>
-              {% if lab_test.is_approved %}
-              <p class="status approved">Approved</p>
-              {% else %}
-              <p class="status pending">Pending</p>
-              {% endif %}
-            </div>
-            <div class="accordion-content">
-              <div class="lab-analysis-box">
-                {% for lab_analysis_detail in lab_test.lab_analysis_details %}
-                <div class="medication-item">
-                  <div class="medication-details">
-                    <div class="medication-name">
-                      <h4>{{ lab_analysis_detail.test }}</h4>
-                      <p>{{ lab_analysis_detail.result }}</p>
-                    </div>
-                  </div>
-                  {% if lab_test and lab_test.is_approved == False %}
-                  <div class="medication-actions">
-                    <a href="{{ url_for('admin.remove_lab_analysis', lab_analysis_id=lab_analysis_detail.unique_id) }}">
-                      <button class="btn-icon danger">
-                        <i class="fas fa-trash"></i>
-                      </button>
-                    </a>
-                  </div>
+    <div class="form-section">
+      <div class="section-title">Lab Analysis</div>
+      {% if lab_analysis %}
+      <div class="form-section lab-info">
+        <div class="section-title">Test Uploaded</div>
+        <div class="lab-analysis">
+          {% for lab_test in lab_analysis|sort(attribute="date_created", reverse=True) %}
+          <div class="accordion">
+            <div class="accordion-item">
+              <div class="accordion-header">
+                <div class="action-header-box">
+                  <h2 id="accordion-header">Lab Test #{{ lab_test.unique_id }}</h2>
+                  {% if (current_user.staff_role.name == "Admin" or current_user.staff_role.name == "Lab Tech" or
+                  current_user.staff_role.name == "SuperAdmin") and
+                  lab_test.is_active and lab_test.lab_analysis_details %}
+                  <a id="approvebtn"
+                    href="{{ url_for('admin.approve_lab_analysis', lab_analysis_id=lab_test.unique_id) }}">Approve</a>
                   {% endif %}
                 </div>
-                {% endfor %}
+                {% if lab_test.is_approved %}
+                <p class="status approved">Approved</p>
+                {% else %}
+                <p class="status pending">Pending</p>
+                {% endif %}
+              </div>
+              <div class="accordion-content">
+                <div class="lab-analysis-box">
+                  {% for lab_analysis_detail in lab_test.lab_analysis_details %}
+                  <div class="medication-item">
+                    <div class="medication-details">
+                      <div class="medication-name">
+                        <h4>{{ lab_analysis_detail.test }}</h4>
+                        <p>{{ lab_analysis_detail.result }}</p>
+                      </div>
+                    </div>
+                    {% if lab_test and lab_test.is_approved == False %}
+                    <div class="medication-actions">
+                      <a
+                        href="{{ url_for('admin.remove_lab_analysis', lab_analysis_id=lab_analysis_detail.unique_id) }}">
+                        <button class="btn-icon danger">
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </a>
+                    </div>
+                    {% endif %}
+                  </div>
+                  {% endfor %}
+                </div>
               </div>
             </div>
           </div>
+          {% endfor %}
         </div>
-        {% endfor %}
       </div>
+      {% else %}
+      <p class="else">No lab test conducted</p>
+      {% endif %}
+      {% if appointment.is_active and not appointment.diagnosis %}
+      <form class="lab-form" action="{{ url_for('admin.add_lab_analysis', appointment_id=appointment.unique_id) }}"
+        method="post">
+        {{ lab_analysis_form.csrf_token }}
+        <div class="form-group">
+          {{ lab_analysis_form.test.label }}
+          {{ lab_analysis_form.test(class="form-control", placeholder="Add details about the test conducted") }}
+        </div>
+        <div class="form-group">
+          {{ lab_analysis_form.result.label }}
+          {{ lab_analysis_form.result(class="form-control", placeholder="Add details about the results of the test") }}
+        </div>
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-plus-circle"></i>
+          Submit Lab Analysis
+        </button>
+      </form>
+      {% endif %}
     </div>
-    {% else %}
-    <p class="else">No lab test conducted</p>
-    {% endif %}
-    {% if appointment.is_active and not appointment.diagnosis %}
-    <form class="lab-form" action="{{ url_for('admin.add_lab_analysis', appointment_id=appointment.unique_id) }}"
-      method="post">
-      {{ lab_analysis_form.csrf_token }}
-      <div class="form-group">
-        {{ lab_analysis_form.test.label }}
-        {{ lab_analysis_form.test(class="form-control", placeholder="Add details about the test conducted") }}
-      </div>
-      <div class="form-group">
-        {{ lab_analysis_form.result.label }}
-        {{ lab_analysis_form.result(class="form-control", placeholder="Add details about the results of the test") }}
-      </div>
-      <button type="submit" class="btn btn-primary">
-        <i class="fas fa-plus-circle"></i>
-        Submit Lab Analysis
-      </button>
-    </form>
-    {% endif %}
-  </div>
 
-  {% if current_user.staff_role.name == "Admin" or current_user.staff_role.name == "Lab Tech" %}
-  <div class="form-section">
-    <div class="section-title">Diagnosis</div>
-    {% if lab_analysis[-1] and lab_analysis[-1].is_approved %}
-    <form action="{{ url_for('admin.add_diagnosis', appointment_id=appointment.unique_id) }}" method="post">
-      {{ diagnosis_form.csrf_token }}
-      <div class="form-group">
-        {{ diagnosis_form.diagnosis.label }}
-        <select required id="disease-select" name="diseases" class="form-control select2" multiple="multiple">
-          {% set diagnosed_disease_ids = [] %}
-          {% for diagnosis_disease in diagnosis_details %}
-          {{ diagnosed_disease_ids.append(diagnosis_disease.disease_id) or "" }}
-          {% endfor %}
-          {% for disease in diseases %}
-          <option value="{{ disease.unique_id }}" {% if disease.id in diagnosed_disease_ids %}selected{% endif %}>
-            {{ disease.name }}
-          </option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="form-group">
-        {{ diagnosis_form.note.label }}
-        {{ diagnosis_form.note(class="form-control", placeholder="Add details about the diagnosis") }}
-      </div>
-      {% if appointment.is_active %}
-      <button type="submit" class="btn btn-primary">
-        <i class="fas fa-plus-circle"></i>
-        Submit Diagnosis
-      </button>
+    {% if current_user.staff_role.name == "SuperAdmin" or current_user.staff_role.name == "Admin" or
+    current_user.staff_role.name == "Lab Tech" %}
+    <div class="form-section">
+      <div class="section-title">Diagnosis</div>
+      {% if lab_analysis[-1] and lab_analysis[-1].is_approved %}
+      <form action="{{ url_for('admin.add_diagnosis', appointment_id=appointment.unique_id) }}" method="post">
+        {{ diagnosis_form.csrf_token }}
+        <div class="form-group">
+          {{ diagnosis_form.diagnosis.label }}
+          <select required id="disease-select" name="diseases" class="form-control select2" multiple="multiple">
+            {% set diagnosed_disease_ids = [] %}
+            {% for diagnosis_disease in diagnosis_details %}
+            {{ diagnosed_disease_ids.append(diagnosis_disease.disease_id) or "" }}
+            {% endfor %}
+            {% for disease in diseases %}
+            <option value="{{ disease.unique_id }}" {% if disease.id in diagnosed_disease_ids %}selected{% endif %}>
+              {{ disease.name }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          {{ diagnosis_form.note.label }}
+          {{ diagnosis_form.note(class="form-control", placeholder="Add details about the diagnosis") }}
+        </div>
+        {% if appointment.is_active %}
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-plus-circle"></i>
+          Submit Diagnosis
+        </button>
+        {% endif %}
+      </form>
+      {% else %}
+      <p class="else">Awaiting approval of lab tests</p>
       {% endif %}
-    </form>
-    {% else %}
-    <p class="else">Awaiting approval of lab tests</p>
+    </div>
     {% endif %}
-  </div>
-  {% endif %}
 
-  {% if current_user.staff_role.name == "Admin" or current_user.staff_role.name == "Lab Tech" %}
-  <div class="form-section">
-    <div class="section-title">Treatment Plan</div>
-    {% if diagnosis %}
-    <form action="{{ url_for('admin.add_prescription', appointment_id=appointment.unique_id) }}" method="post">
-      {{ prescription_form.csrf_token }}
-      <div class="form-group">
-        {{ prescription_form.prescription.label }}
-        <select required id="medicine-select" name="medicines" class="form-control select2" multiple="multiple">
-          {% set prescribed_medicine_ids = [] %}
-          {% for prescribed_medicine in prescription_details %}
-          {{ prescribed_medicine_ids.append(prescribed_medicine.medicine_id) or "" }}
-          {% endfor %}
-          {% for inventory in inventories %}
-          <option value="{{ inventory.inventory.unique_id }}" {% if inventory.inventory.id in prescribed_medicine_ids
-            %}selected{% endif %}>
-            {{ inventory.inventory.name }}
-          </option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="form-group">
-        {{ prescription_form.note.label }}
-        {{ prescription_form.note(class="form-control", placeholder="Add details about the prescription") }}
-      </div>
-      {% if appointment.is_active %}
-      <button type="submit" class="btn btn-primary">
-        <i class="fas fa-plus-circle"></i>
-        Submit Prescription
-      </button>
+    {% if current_user.staff_role.name == "SuperAdmin" or current_user.staff_role.name == "Admin" or
+    current_user.staff_role.name == "Lab Tech" %}
+    <div class="form-section">
+      <div class="section-title">Treatment Plan</div>
+      {% if diagnosis %}
+      <form action="{{ url_for('admin.add_prescription', appointment_id=appointment.unique_id) }}" method="post">
+        {{ prescription_form.csrf_token }}
+        <div class="form-group">
+          {{ prescription_form.prescription.label }}
+          <select required id="medicine-select" name="medicines" class="form-control select2" multiple="multiple">
+            {% set prescribed_medicine_ids = [] %}
+            {% for prescribed_medicine in prescription_details %}
+            {{ prescribed_medicine_ids.append(prescribed_medicine.medicine_id) or "" }}
+            {% endfor %}
+            {% for inventory in inventories %}
+            <option value="{{ inventory.inventory.unique_id }}" {% if inventory.inventory.id in prescribed_medicine_ids
+              %}selected{% endif %}>
+              {{ inventory.inventory.name }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          {{ prescription_form.note.label }}
+          {{ prescription_form.note(class="form-control", placeholder="Add details about the prescription") }}
+        </div>
+        {% if appointment.is_active %}
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-plus-circle"></i>
+          Submit Prescription
+        </button>
+        {% endif %}
+      </form>
+      {% else %}
+      <p class="else">No diagnosis available</p>
       {% endif %}
-    </form>
-    {% else %}
-    <p class="else">No diagnosis available</p>
+    </div>
     {% endif %}
-  </div>
-  {% endif %}
 
-  {% if current_user.staff_role.name == "Admin" or current_user.staff_role.name == "Lab Tech" %}
-  {% if appointment.is_active %}
-  <div class="form-actions">
-    {% if appointment.lab_analysis and appointment.diagnosis and appointment.prescription %}
-    <a href="{{ url_for('admin.complete_appointment', appointment_id=appointment.unique_id) }}">
-      <button id="complete" class="btn btn-primary">
+    {% if current_user.staff_role.name == "SuperAdmin" or current_user.staff_role.name == "Admin" or
+    current_user.staff_role.name == "Lab Tech" %}
+    {% if appointment.is_active %}
+    <div class="form-actions">
+      {% if appointment.lab_analysis and appointment.diagnosis and appointment.prescription %}
+      <a href="{{ url_for('admin.complete_appointment', appointment_id=appointment.unique_id) }}">
+        <button id="complete" class="btn btn-primary">
+          Complete & Sign
+        </button>
+      </a>
+      {% else %}
+      <button disabled class="btn btn-primary">
         Complete & Sign
       </button>
-    </a>
-    {% else %}
-    <button disabled class="btn btn-primary">
-      Complete & Sign
-    </button>
+      {% endif %}
+    </div>
+    {% endif %}
     {% endif %}
   </div>
-  {% endif %}
-  {% endif %}
 </div>
 {% endblock %}
 

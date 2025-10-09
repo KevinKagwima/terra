@@ -50,8 +50,10 @@ Inventory History {{ inventory.inventory.name }}
       </div>
       <div class="card-content">
         <div class="card-info-stats">
-          <h3>{{ inventory.inventory.name }}</h3>
+          <h3 title="{{ inventory.inventory.name }}">{{ inventory.inventory.name }}</h3>
           <span id="price">{{ "Tsh {:,}".format(inventory.inventory.price) }}</span>
+        </div>
+        <div class="card-info-stats main-stats">
           <div class="medicine-meta">
             <h4>Current Quantity</h4>
             <span class="meta-item">
@@ -59,12 +61,12 @@ Inventory History {{ inventory.inventory.name }}
               {{ "{:,}".format(inventory.quantity) }}
             </span>
           </div>
+          {% if inventory.quantity > 10 %}
+          <span class="status-badge completed">Good Quantity</span>
+          {% else %}
+          <span class="status-badge cancelled">Low Quantity</span>
+          {% endif %}
         </div>
-        {% if inventory.quantity > 10 %}
-        <span class="status-badge completed">Good Quantity</span>
-        {% else %}
-        <span class="status-badge cancelled">Low Quantity</span>
-        {% endif %}
       </div>
     </div>
   </div>
@@ -79,30 +81,86 @@ Inventory History {{ inventory.inventory.name }}
         </button>
       </div> -->
     </div>
-
     <div class="table-container">
       {% if history %}
       <table>
         <thead>
           <tr>
             <th>Date</th>
-            <th>Opening Stock</th>
+            <th>Stock Before</th>
             <th>Stock In</th>
-            <th>Stock Sold</th>
-            <th>Closing Stock</th>
+            <th>Stock After</th>
             <th>Status</th>
           </tr>
         </thead>
         <tbody>
-          {% for record in history %}
+          {% for record in history|sort(attribute="id", reverse=true) %}
           <tr>
             <td>
               {{ record.date_updated.strftime("%b %d, %Y at %I:%M %p") }}
             </td>
-            <td>1,500</td>
-            <td><span class="stock-in">+500</span></td>
-            <td>42</td>
-            <td>1,958</td>
+            <td>
+              {{ record.stock_before }}
+            </td>
+            <td><span class="stock-in">+{{ record.stock_added }}</span></td>
+            <td>{{ record.stock_before + record.stock_added }}</td>
+            <td><span class="status-badge refilled">{{ record.stock_status }}</span></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="else">
+        <p>No history</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- <div class="table-footer">
+      <div class="pagination">
+        <button class="pagination-btn" disabled>
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="pagination-btn active">1</button>
+        <button class="pagination-btn">2</button>
+        <button class="pagination-btn">3</button>
+        <button class="pagination-btn">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+    </div> -->
+  </div>
+
+  <div class="table-section">
+    <div class="section-header">
+      <h2>Sales History</h2>
+      <!-- <div class="table-actions">
+        <button class="btn btn-outline">
+          <i class="fas fa-download"></i> Export
+        </button>
+      </div> -->
+    </div>
+    <div class="table-container">
+      {% if sale_history %}
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Stock Before</th>
+            <th>Stock Sold</th>
+            <th>Stock After</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for record in sale_history|sort(attribute="id", reverse=true) %}
+          <tr>
+            <td>
+              {{ record.date_updated.strftime("%b %d, %Y at %I:%M %p") }}
+            </td>
+            <td>{{ record.stock_before }}</td>
+            <td>{{ record.stock_added }}</td>
+            <td>{{ record.stock_before - record.stock_added }}</td>
             <td><span class="status-badge refilled">{{ record.stock_status }}</span></td>
           </tr>
           {% endfor %}

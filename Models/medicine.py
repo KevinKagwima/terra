@@ -25,6 +25,7 @@ class InventoryHistory(BaseModel, db.Model):
   __tablename__ = "inventory_history"
   inventory_id = db.Column(db.Integer, db.ForeignKey('inventory.id'))
   stock_added = db.Column(db.Integer(), default=0)
+  stock_before = db.Column(db.Integer())
   stock_status = db.Column(db.String(20))
   date_updated = db.Column(db.DateTime())
 
