@@ -6,7 +6,7 @@ from reportlab.lib import colors
 from datetime import datetime
 from io import BytesIO
 
-def generate_payment_pdf(patient_info, payment_info):
+def generate_appointment_pdf(patient_info,  prescription_info, diagnosis_info, lab_info):
   # Generate filename
   timestamp = datetime.now().strftime("%Y-%m-%d")
   filename = f"payment-receipt-{patient_info['first_name']}_{patient_info['last_name']}-{timestamp}.pdf"
@@ -53,29 +53,7 @@ def generate_payment_pdf(patient_info, payment_info):
   elements.append(Paragraph("P.O.BOX 222, Arusha, Arusha", styles['Title']))
   elements.append(Paragraph("Phone: (123) 456-7890 | www.terranaturalherbs.co.tz", styles['Title']))
   elements.append(Spacer(1, 30))
-  
-  # Receipt title
-  elements.append(Paragraph("PAYMENT RECEIPT", styles['Header']))
-  
-  # Transaction info
-  transaction_data = [
-    ["Transaction ID:", payment_info['payment_id']],
-    ["Date:", payment_info['date_paid'] if isinstance(payment_info['date_paid'], str) else payment_info['date_paid'].strftime("%B %d, %Y %I:%M %p")],
-    ["Status:","Paid" if payment_info['is_completed'] else "Not Paid"],
-    ["Amount Paid:", f"Tsh {payment_info['amount']:,}"]
-  ]
-  
-  transaction_table = Table(transaction_data, colWidths=[200, 330])
-  transaction_table.setStyle(TableStyle([
-    ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-    ('FONTSIZE', (0, 0), (-1, -1), 10),
-    ('BOTTOMPADDING', (0, 0), (-1, -1), 1),
-    ('VALIGN', (0, 0), (0, 0), 'TOP'),
-  ]))
-  
-  elements.append(transaction_table)
-  elements.append(Spacer(1, 30))
-  
+
   # Patient information
   elements.append(Paragraph("PATIENT INFORMATION", styles['Header']))
   
@@ -95,6 +73,28 @@ def generate_payment_pdf(patient_info, payment_info):
   ]))
   
   elements.append(patient_table)
+  elements.append(Spacer(1, 30))
+
+  # Appointment information
+  elements.append(Paragraph("APPOINTMENT INFORMATION", styles['Header']))
+
+  appointment_data = [
+    ["Lab Analysis", f"{lab_info["lab_details"]}"],
+    ["Diagnosed with", f"{diagnosis_info["diagnosis_details"]}"],
+    ["Diagnosis Note", f"{diagnosis_info["note"]}"],
+    ["Prescribed Medication", f"{prescription_info["prescription_details"]}"],
+    ["Doctor's Note", f"{prescription_info["note"]}"]
+  ]
+
+  prescription_table = Table(appointment_data, colWidths=[200, 330])
+  prescription_table.setStyle(TableStyle([
+    ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+    ('FONTSIZE', (0, 0), (-1, -1), 10),
+    ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
+    ('WORDWRAP', (0, 0), (-1, -1), True)
+  ]))
+  
+  elements.append(prescription_table)
   elements.append(Spacer(1, 30))
   
   # Footer

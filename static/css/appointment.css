@@ -15,6 +15,12 @@
   flex-wrap: wrap;
 }
 
+.appointment-status-box {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 .appointment-feedback {
   background-color: var(--white);
   padding: 0.8rem 1rem;

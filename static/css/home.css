@@ -223,6 +223,26 @@
   margin-right: 0.25rem;
 }
 
+.dashboard-alerts {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.stock-alerts {
+  background-color: #ef4444;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+}
+
+.stock-alerts p {
+  color: #feecec;
+  text-align: center;
+}
+
+.medical-data-table .stock-alerts {
+  margin-bottom: 0.5rem;
+}
+
 .feedback-box {
   display: grid;
   gap: 1rem;

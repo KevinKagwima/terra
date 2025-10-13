@@ -17,6 +17,7 @@ from .form import AddPatientForm, DiagnosisForm, PrescriptionForm, LabAnalysisFo
 from Utils.notification_service import NotificationService
 from Auth.form import StaffRegistrationForm
 from Utils.export_pdf import generate_payment_pdf
+from Utils.export_appointment import generate_appointment_pdf
 from decorator import role_required, branch_required
 from collections import defaultdict
 from sqlalchemy.sql import func, desc
@@ -125,12 +126,12 @@ def populate_inventory(branch_id):
           new_inventory = Inventory(
             clinic_id = clinic.id,
             medicine_id = medicine.id,
-            quantity = 100
+            quantity = 0
           )
           db.session.add(new_inventory)
           db.session.commit()
 
-          record_opening_stock(new_inventory.id, new_inventory.quantity, "Opening Stock", new_inventory.quantity)
+          # record_opening_stock(new_inventory.id, new_inventory.quantity, "Opening Stock", new_inventory.quantity)
 
   except Exception as e:
     db.session.rollback()
@@ -267,13 +268,21 @@ def dashboard():
     "prescription_medicine_ids": prescription_medicine_ids,
     "clinic": Clinic.query.get(session["clinic_id"]),
     "form": form,
-    "update_password_form": UpdatedPasswordForm()
+    "update_password_form": UpdatedPasswordForm(),
+    "low_stock_count": low_stock_count()
   }
   
   return CachedResponse (
     response = make_response(render_template("Main/home.html", **context)),
     timeout=600,
   )
+
+def low_stock_count():
+  low_inventory_count = Inventory.query.filter(Inventory.quantity <= 10).all()
+  if low_inventory_count:
+    return len(low_inventory_count)
+  else:
+    return 0
 
 @admin.route("/find-patient/<string:search_text>")
 @login_required
@@ -423,7 +432,8 @@ def inventory_history(inventory_id):
   context = {
     "inventory": inventory,
     "history": InventoryHistory.query.filter(InventoryHistory.inventory_id==inventory.id, InventoryHistory.stock_status != "Sale").all(),
-    "sale_history": InventoryHistory.query.filter_by(inventory_id=inventory.id, stock_status="Sale").all()
+    "sale_history": InventoryHistory.query.filter_by(inventory_id=inventory.id, stock_status="Sale").all(),
+    "clinic": Clinic.query.get(session["clinic_id"]),
   }
 
   return CachedResponse(
@@ -1045,12 +1055,17 @@ def add_prescription(appointment_id):
       )
       db.session.add(new_prescription)
       db.session.flush()
+
       prescription_details(new_prescription.id, medicine_ids)
+
       calculate_prescription_total(new_prescription.id)
     else:
       remove_prescribed_medicine(existing_prescription.id)
+      
       prescription_details(existing_prescription.id, medicine_ids)
+      
       calculate_prescription_total(existing_prescription.id)
+      
       form.populate_obj(existing_prescription)
 
     flash("Prescription saved successfully", "success")
@@ -1078,6 +1093,7 @@ def prescription_details(prescription_id, prescribed_medicine_ids):
       )
       db.session.add(new_prescription_detail)
       db.session.commit()
+      
       NotificationService.create_prescription_notification(
         prescription.id,
         f"{prescription.patient_prescription.first_name} {prescription.patient_prescription.last_name}",
@@ -1244,14 +1260,35 @@ def export_transaction(payment_id):
 
   try:
     patient = Patients.query.get(payment.patient_id)
-    prescription = Prescription.query.get(payment.prescription_id)
-    diagnosis = Diagnosis.query.get(payment.diagnosis_id)
 
-    return generate_payment_pdf(patient.to_dict(), payment.to_dict(), prescription.to_dict(), diagnosis.to_dict())
+    return generate_payment_pdf(patient.to_dict(), payment.to_dict())
   except Exception as e:
     flash(f"{str(e)}", "danger")
 
   return redirect(url_for("admin.dashboard"))
+
+@admin.route("/export/appointment/<int:appointment_id>")
+@login_required
+@fresh_login_required
+@branch_required()
+def export_appointment(appointment_id):
+  cache.clear()
+  appointment = Appointment.query.filter_by(unique_id=appointment_id).first()
+  if not appointment:
+    flash("Appointment not found", "danger")
+    return redirect(url_for("admin.dashboard"))
+
+  try:
+    patient = Patients.query.get(appointment.patient_id)
+    prescription = Prescription.query.filter_by(appointment_id=appointment.id).first()
+    diagnosis = Diagnosis.query.filter_by(appointment_id=appointment.id).first()
+    lab_results = LabAnalysis.query.filter_by(appointment_id=appointment.id).first()
+
+    return generate_appointment_pdf(patient.to_dict(), prescription.to_dict(), diagnosis.to_dict(), lab_results.to_dict())
+  except Exception as e:
+    flash(f"{str(e)}", "danger")
+
+  return redirect(url_for("admin.appointment", appointment_id=appointment.unique_id))
 
 @admin.route("/analytics", methods=["POST", "GET"])
 @login_required

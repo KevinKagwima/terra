@@ -13,6 +13,11 @@ class LabAnalysis(BaseModel, db.Model):
 
   def __repr__(self):
     return f"{self.patient_id}"
+  
+  def to_dict(self):
+    return {
+      'lab_details': self.lab_analysis_details
+    }
 
 class LabAnalysisDetails(BaseModel, db.Model):
   __tablename__ = "lab_analysis_details"
@@ -21,4 +26,4 @@ class LabAnalysisDetails(BaseModel, db.Model):
   result = db.Column(db.Text(), nullable=False)
 
   def __repr__(self):
-    return f"{self.lab_analysis_id}"
+    return f"Test Conducted: {self.test} - Test Results: {self.result}"

@@ -29,7 +29,15 @@ Patient Appointment
         {% if appointment.is_active %}
         <span class="status-badge pending">Ongoing</span>
         {% else %}
-        <span class="status-badge completed">Completed</span>
+        <div class="appointment-status-box">
+          <span class="status-badge completed">Completed</span>
+          <a target="_blank" href="{{ url_for('admin.export_appointment', appointment_id=appointment.unique_id) }}">
+            <button id="receipt-btn" class="btn btn-primary">
+              <i class="fas fa-download"></i>
+              Download Appointment
+            </button>
+          </a>
+        </div>
         {% endif %}
       </div>
       {% if appointment.is_active == False and appointment.date_closed and (current_user.staff_role.name == "Admin" or
