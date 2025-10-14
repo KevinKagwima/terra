@@ -34,7 +34,7 @@ Patient Appointment
           <a target="_blank" href="{{ url_for('admin.export_appointment', appointment_id=appointment.unique_id) }}">
             <button id="receipt-btn" class="btn btn-primary">
               <i class="fas fa-download"></i>
-              Download Appointment
+              Download Report
             </button>
           </a>
         </div>
@@ -90,7 +90,8 @@ Patient Appointment
                 <div class="action-header-box">
                   <h2 id="accordion-header">Lab Test #{{ lab_test.unique_id }}</h2>
                   {% if (current_user.staff_role.name == "Admin" or current_user.staff_role.name == "Lab Tech" or
-                  current_user.staff_role.name == "SuperAdmin") and
+                  current_user.staff_role.name == "SuperAdmin" or current_user.staff_role.name == "Medical Consultant")
+                  and
                   lab_test.is_active and lab_test.lab_analysis_details %}
                   <a id="approvebtn"
                     href="{{ url_for('admin.approve_lab_analysis', lab_analysis_id=lab_test.unique_id) }}">Approve</a>
@@ -155,7 +156,7 @@ Patient Appointment
     </div>
 
     {% if current_user.staff_role.name == "SuperAdmin" or current_user.staff_role.name == "Admin" or
-    current_user.staff_role.name == "Lab Tech" %}
+    current_user.staff_role.name == "Lab Tech" or current_user.staff_role.name == "Medical Consultant" %}
     <div class="form-section">
       <div class="section-title">Diagnosis</div>
       {% if lab_analysis[-1] and lab_analysis[-1].is_approved %}
@@ -193,7 +194,7 @@ Patient Appointment
     {% endif %}
 
     {% if current_user.staff_role.name == "SuperAdmin" or current_user.staff_role.name == "Admin" or
-    current_user.staff_role.name == "Lab Tech" %}
+    current_user.staff_role.name == "Lab Tech" or current_user.staff_role.name == "Medical Consultant" %}
     <div class="form-section">
       <div class="section-title">Treatment Plan</div>
       {% if diagnosis %}
@@ -232,7 +233,7 @@ Patient Appointment
     {% endif %}
 
     {% if current_user.staff_role.name == "SuperAdmin" or current_user.staff_role.name == "Admin" or
-    current_user.staff_role.name == "Lab Tech" %}
+    current_user.staff_role.name == "Lab Tech" or current_user.staff_role.name == "Medical Consultant" %}
     {% if appointment.is_active %}
     <div class="form-actions">
       {% if appointment.lab_analysis and appointment.diagnosis and appointment.prescription %}

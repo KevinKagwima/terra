@@ -766,7 +766,7 @@ def patient_profile(patient_id):
 @login_required
 @fresh_login_required
 @branch_required()
-@role_required(["SuperAdmin", "Admin", "Lab Tech", "Clerk"])
+@role_required(["SuperAdmin", "Admin", "Lab Tech", "Clerk", "Medical Consultant"])
 def create_appointment(patient_id):
   cache.clear()
   patient = Patients.query.filter_by(unique_id=patient_id).first()
@@ -796,7 +796,7 @@ def create_appointment(patient_id):
 @login_required
 @fresh_login_required
 @branch_required()
-@role_required(["SuperAdmin", "Admin", "Lab Tech", "Clerk"])
+@role_required(["SuperAdmin", "Admin", "Lab Tech", "Clerk", "Medical Consultant"])
 def appointment(appointment_id):
   appointment = Appointment.query.filter_by(unique_id=appointment_id).first()
   if not appointment:
@@ -850,7 +850,7 @@ def appointment(appointment_id):
 @login_required
 @fresh_login_required
 @branch_required()
-@role_required(["SuperAdmin", "Admin", "Clerk"])
+@role_required(["SuperAdmin", "Admin", "Clerk", "Lab Tech", "Medical Consultant"])
 def add_lab_analysis(appointment_id):
   cache.clear()
   appointment = Appointment.query.filter_by(unique_id=appointment_id).first()
@@ -904,7 +904,7 @@ def create_lab_analysis_details(lab_analysis_id, form):
 @login_required
 @fresh_login_required
 @branch_required()
-@role_required(["SuperAdmin", "Admin", "Lab Tech"])
+@role_required(["SuperAdmin", "Admin", "Lab Tech", "Medical Consultant"])
 def remove_lab_analysis(lab_analysis_id):
   cache.clear()
   lab_analysis = LabAnalysisDetails.query.filter_by(unique_id=lab_analysis_id).first()
@@ -927,7 +927,7 @@ def remove_lab_analysis(lab_analysis_id):
 @login_required
 @fresh_login_required
 @branch_required()
-@role_required(["SuperAdmin", "Admin", "Lab Tech"])
+@role_required(["SuperAdmin", "Admin", "Lab Tech", "Medical Consultant"])
 def approve_lab_analysis(lab_analysis_id):
   cache.clear()
   lab_analysis = LabAnalysis.query.filter_by(unique_id=lab_analysis_id).first()
@@ -958,7 +958,7 @@ def approve_lab_analysis(lab_analysis_id):
 @login_required
 @fresh_login_required
 @branch_required()
-@role_required(["SuperAdmin", "Admin", "Lab Tech"])
+@role_required(["SuperAdmin", "Admin", "Lab Tech", "Medical Consultant"])
 def add_diagnosis(appointment_id):
   cache.clear()
   appointment = Appointment.query.filter_by(unique_id=appointment_id).first()
@@ -1027,7 +1027,7 @@ def remove_diagnosis_disease(diagnosis_id):
 @login_required
 @fresh_login_required
 @branch_required()
-@role_required(["SuperAdmin", "Admin", "Lab Tech"])
+@role_required(["SuperAdmin", "Admin", "Lab Tech", "Medical Consultant"])
 def add_prescription(appointment_id):
   cache.clear()
   appointment = Appointment.query.filter_by(unique_id=appointment_id).first()
@@ -1117,7 +1117,7 @@ def remove_prescribed_medicine(prescription_id):
 @login_required
 @fresh_login_required
 @branch_required()
-@role_required(["SuperAdmin", "Admin", "Lab Tech"])
+@role_required(["SuperAdmin", "Admin", "Lab Tech", "Medical Consultant"])
 def complete_appointment(appointment_id):
   cache.clear()
   appointment = Appointment.query.filter_by(unique_id=appointment_id).first()
@@ -1251,6 +1251,7 @@ def record_transaction(prescription_id, diagnosis_id):
 @login_required
 @fresh_login_required
 @branch_required()
+@role_required(["SuperAdmin", "Admin", "Accountant"])
 def export_transaction(payment_id):
   cache.clear()
   payment = Payment.query.filter_by(unique_id=payment_id).first()
@@ -1271,6 +1272,7 @@ def export_transaction(payment_id):
 @login_required
 @fresh_login_required
 @branch_required()
+@role_required(["SuperAdmin", "Admin", "LabTech", "Medical Consultant"])
 def export_appointment(appointment_id):
   cache.clear()
   appointment = Appointment.query.filter_by(unique_id=appointment_id).first()
@@ -1282,9 +1284,9 @@ def export_appointment(appointment_id):
     patient = Patients.query.get(appointment.patient_id)
     prescription = Prescription.query.filter_by(appointment_id=appointment.id).first()
     diagnosis = Diagnosis.query.filter_by(appointment_id=appointment.id).first()
-    lab_results = LabAnalysis.query.filter_by(appointment_id=appointment.id).first()
+    lab_results = LabAnalysis.query.filter_by(appointment_id=appointment.id).all()
 
-    return generate_appointment_pdf(patient.to_dict(), prescription.to_dict(), diagnosis.to_dict(), lab_results.to_dict())
+    return generate_appointment_pdf(patient.to_dict(), prescription, diagnosis, lab_results)
   except Exception as e:
     flash(f"{str(e)}", "danger")
 

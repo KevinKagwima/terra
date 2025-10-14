@@ -23,14 +23,15 @@ def create_tables():
   print("Tables created successully")
 
 def add_roles():
-  roles = ["SuperAdmin", "Admin", "Clerk", "Stock Controller", "Accountant", "Lab Tech"]
+  roles = ["SuperAdmin", "Admin", "Clerk", "Stock Controller", "Accountant", "Lab Tech", "Medical Consultant"]
   for role in roles:
-    new_role = Role(
-      name = role
-    )
-    db.session.add(new_role)
-    db.session.commit()
-    print(f"{role} role added")
+    if not Role.query.filter_by(name=role).first():
+      new_role = Role(
+        name = role
+      )
+      db.session.add(new_role)
+      db.session.commit()
+      print(f"{role} role added")
 
 def add_branch_types():
   branches = ["Headquarters", "Other"]
@@ -44,7 +45,7 @@ def add_branch_types():
 
 if __name__ == "__main__":
   with app.app_context():
-    drop_tables()
-    create_tables()
+    # drop_tables()
+    # create_tables()
     add_roles()
-    add_branch_types()
+    # add_branch_types()

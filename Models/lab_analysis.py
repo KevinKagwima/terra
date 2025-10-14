@@ -26,4 +26,4 @@ class LabAnalysisDetails(BaseModel, db.Model):
   result = db.Column(db.Text(), nullable=False)
 
   def __repr__(self):
-    return f"Test Conducted: {self.test} - Test Results: {self.result}"
+    return f"Test Conducted: {self.test} \n Test Results: {self.result}"

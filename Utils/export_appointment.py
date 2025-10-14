@@ -5,11 +5,14 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib import colors
 from datetime import datetime
 from io import BytesIO
+from Models.lab_analysis import LabAnalysisDetails
+from Models.diagnosis import DiagnosisDetails
+from Models.prescription import PrescriptionDetails
 
 def generate_appointment_pdf(patient_info,  prescription_info, diagnosis_info, lab_info):
   # Generate filename
   timestamp = datetime.now().strftime("%Y-%m-%d")
-  filename = f"payment-receipt-{patient_info['first_name']}_{patient_info['last_name']}-{timestamp}.pdf"
+  filename = f"appointment-report-{patient_info['first_name']}_{patient_info['last_name']}-{timestamp}.pdf"
 
   buffer = BytesIO()
   
@@ -40,9 +43,13 @@ def generate_appointment_pdf(patient_info,  prescription_info, diagnosis_info, l
   ))
   
   styles.add(ParagraphStyle(
-    name='NormalBold',
+    name='WrappedText',
     parent=styles['Normal'],
-    fontName='Helvetica-Bold'
+    fontSize=10,
+    leading=12,
+    spaceBefore=6,
+    spaceAfter=6,
+    wordWrap='LTR'
   ))
   
   # Build document content
@@ -75,33 +82,103 @@ def generate_appointment_pdf(patient_info,  prescription_info, diagnosis_info, l
   elements.append(patient_table)
   elements.append(Spacer(1, 30))
 
-  # Appointment information
-  elements.append(Paragraph("APPOINTMENT INFORMATION", styles['Header']))
+  # Lab Analysis information
+  elements.append(Paragraph("LAB ANALYSIS INFORMATION", styles['Header']))
 
-  appointment_data = [
-    ["Lab Analysis", f"{lab_info["lab_details"]}"],
-    ["Diagnosed with", f"{diagnosis_info["diagnosis_details"]}"],
-    ["Diagnosis Note", f"{diagnosis_info["note"]}"],
-    ["Prescribed Medication", f"{prescription_info["prescription_details"]}"],
-    ["Doctor's Note", f"{prescription_info["note"]}"]
-  ]
+  lab_analysis_data = []
+  for lab_detail in lab_info:
+    analyses = LabAnalysisDetails.query.filter_by(lab_analysis_id=lab_detail.id).all()
+    for analysis in analyses:
+      lab_analysis_data.append([
+        Paragraph("Lab Test", styles['WrappedText']),
+        Paragraph(analysis.test, styles['WrappedText'])
+      ])
+      lab_analysis_data.append([
+        Paragraph("Test Results", styles['WrappedText']),
+        Paragraph(analysis.result, styles['WrappedText'])
+      ])
 
-  prescription_table = Table(appointment_data, colWidths=[200, 330])
+  lab_analysis_table = Table(lab_analysis_data, colWidths=[200, 330])
+  lab_analysis_table.setStyle(TableStyle([
+    ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+    ('FONTSIZE', (0, 0), (-1, -1), 10),
+    ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+    ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+    ('WORDWRAP', (0, 0), (-1, -1), True),
+    ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+    ('LEFTPADDING', (0, 0), (-1, -1), 5),
+    ('RIGHTPADDING', (0, 0), (-1, -1), 5),
+    ('GRID', (0,0), (-1,-1), 0.5, colors.lightgrey)
+  ]))
+  
+  elements.append(lab_analysis_table)
+  elements.append(Spacer(1, 30))
+
+  # Diagnosis information
+  elements.append(Paragraph("DIAGNOSIS INFORMATION", styles['Header']))
+
+  diagnosis_data = []
+  diagnoses = DiagnosisDetails.query.filter_by(diagnosis_id=diagnosis_info.id).all()
+  for diagnosis in diagnoses:
+    diagnosis_data.append([
+      Paragraph("Diagnosed with", styles['WrappedText']),
+      Paragraph(diagnosis.diagnosed_disease.name, styles['WrappedText'])
+    ])
+  diagnosis_data.append([
+    Paragraph("Doctor's note", styles['WrappedText']),
+    Paragraph(diagnosis_info.note, styles['WrappedText'])
+  ])
+
+  diagnosis_table = Table(diagnosis_data, colWidths=[200, 330])
+  diagnosis_table.setStyle(TableStyle([
+    ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+    ('FONTSIZE', (0, 0), (-1, -1), 10),
+    ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+    ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+    ('WORDWRAP', (0, 0), (-1, -1), True),
+    ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+    ('LEFTPADDING', (0, 0), (-1, -1), 5),
+    ('RIGHTPADDING', (0, 0), (-1, -1), 5),
+    ('GRID', (0,0), (-1,-1), 0.5, colors.lightgrey)
+  ]))
+  
+  elements.append(diagnosis_table)
+  elements.append(Spacer(1, 30))
+
+  # Prescription information
+  elements.append(Paragraph("PRESCRIPTION INFORMATION", styles['Header']))
+
+  prescription_data = []
+  prescriptions = PrescriptionDetails.query.filter_by(prescription_id=prescription_info.id).all()
+  for prescription in prescriptions:
+    prescription_data.append([
+      Paragraph("Prescribed with", styles['WrappedText']),
+      Paragraph(prescription.prescribed_medicine.name, styles['WrappedText'])
+    ])
+  prescription_data.append([
+    Paragraph("Doctor's note", styles['WrappedText']),
+    Paragraph(prescription_info.note, styles['WrappedText'])
+  ])
+
+  prescription_table = Table(prescription_data, colWidths=[200, 330])
   prescription_table.setStyle(TableStyle([
     ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
     ('FONTSIZE', (0, 0), (-1, -1), 10),
-    ('BOTTOMPADDING', (0, 0), (-1, -1), 5),
-    ('WORDWRAP', (0, 0), (-1, -1), True)
+    ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+    ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+    ('WORDWRAP', (0, 0), (-1, -1), True),
+    ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+    ('LEFTPADDING', (0, 0), (-1, -1), 5),
+    ('RIGHTPADDING', (0, 0), (-1, -1), 5),
+    ('GRID', (0,0), (-1,-1), 0.5, colors.lightgrey)
   ]))
   
   elements.append(prescription_table)
   elements.append(Spacer(1, 30))
   
   # Footer
-  elements.append(Paragraph("Thank you for your payment!", styles['Normal']))
   elements.append(Spacer(1, 10))
-  elements.append(Paragraph("Please keep this receipt for your records.", styles['Normal']))
-  elements.append(Paragraph("For any questions, please contact our billing department.", styles['Normal']))
+  elements.append(Paragraph("For any questions, please contact our billing department.", styles['Title']))
   
   # Generate PDF
   doc.build(elements)
